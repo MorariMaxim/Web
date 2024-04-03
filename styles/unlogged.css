@@ -1,0 +1,76 @@
+body {
+  font-family: Arial, sans-serif;
+  color: #2b2d42;
+  margin: 0;
+  padding: 0;
+}
+.scroll-item {
+  box-sizing: border-box;
+  padding: 5%;
+  min-height: 100%;
+  margin: auto;
+  overflow: hidden;
+
+  line-height: 1.6;
+  scroll-snap-align: end;
+
+  display: flex;
+  flex-flow: column;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.y-scrollable {
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.scroll-item > :is(p, h1) {
+  font-size: 100%;
+}
+
+.scroller {
+  box-sizing: border-box;
+  height: calc(100vh - 50px);
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+h1 {
+  color: #333;
+}
+
+.mpic-concept { 
+  display: flex;
+
+  flex-flow: column;
+
+  align-items: center;
+
+  justify-items: center;
+
+  text-wrap: nowrap;
+
+  overflow: visible;
+
+  border: 5px solid #000;
+
+  padding: 5%;
+
+  
+}
+.mpic-concept > h2 {
+  font-family: monospace;  
+}
+
+.mpic-concept > * {
+  margin: 0;
+}
+
+.mpic-concept > h1 {
+  font-size: 500%;
+}
