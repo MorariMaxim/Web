@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery</title>
+    <link rel="stylesheet" href="styles/photo_gallery_template.css" />
+    <link rel="stylesheet" href="styles/gallery.css" />
+  </head>
+  <body>
+    <main>
+      <div id="display-filter-bar"><img src="" alt="" />Toggle Filter Bar</div>
+      <div id="filter-container">
+        <div id="filter-bar">
+          <div class="form-group">
+            <label for="keywords">Keywords</label>
+            <input
+              type="text"
+              id="keyword"
+              name="keyword"
+              placeholder="Photo keywords ... "
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="rating">Minimum Rating:</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" />
+          </div>
+          <div class="form-group">
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform">
+              <option value="">Select platform...</option>
+              <option value="imgur">Imgur</option>
+              <option value="instagram">Instagram</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="location">Location:</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="Enter location..."
+            />
+          </div>
+          <div class="form-group">
+            <label for="keywords">Keywords</label>
+            <input
+              type="text"
+              id="keyword"
+              name="keyword"
+              placeholder="Photo keywords ... "
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="rating">Minimum Rating:</label>
+            <input type="number" id="rating" name="rating" min="1" max="5" />
+          </div>
+          <div class="form-group">
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform">
+              <option value="">Select platform...</option>
+              <option value="imgur">Imgur</option>
+              <option value="instagram">Instagram</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="location">Location:</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="Enter location..."
+            />
+          </div>
+        </div>
+      </div>
+
+      <div id="gallery-container">
+        <div class="gallery" id="gallery">
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/400x600"
+              alt="Photo 1"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/800x400"
+              alt="Photo 2"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/600x800"
+              alt="Photo 3"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/400x400"
+              alt="Photo 4"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/600x600"
+              alt="Photo 5"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/800x600"
+              alt="Photo 6"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/400x600"
+              alt="Photo 1"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/800x400"
+              alt="Photo 2"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/600x800"
+              alt="Photo 3"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/400x400"
+              alt="Photo 4"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/600x600"
+              alt="Photo 5"
+            />
+          </div>
+          <div class="gallery-item">
+            <img
+              src="https://source.unsplash.com/random/800x600"
+              alt="Photo 6"
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div></div>
+  </body>
+
+  <script src="scripts/prepend_header.js"></script>
+
+  <script>
+    function myFunction() {
+      alert("Button clicked!");
+    }
+
+    var bar = document.getElementById("filter-container");
+
+    var gallery = document.getElementById("gallery-container");
+
+    var button = document.getElementById("display-filter-bar");
+    button.addEventListener("click", function () {
+      if (bar.style.display === "none") {
+        bar.style.display = "block";
+        gallery.style.display = "none";
+        gallery.style.backgroundColor = RED;
+      } else {
+        bar.style.display = "none";
+        gallery.style.display = "block";
+      }
+    });
+  </script>
+</html>

@@ -4,25 +4,42 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sticky Header Example</title>
-    <link rel="stylesheet" href="styles/unlogged_header.css" />
-    <link rel="stylesheet" href="styles/unlogged.css" />
+    <link rel="stylesheet" href="styles/logged_header.css" />
+    <link rel="stylesheet" href="styles/main_page.css" />
   </head>
   <body>
+    <header class="logged-header">
+      <div class="first-section">
+        <div class="hover-trigger">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="popout-menu">
+            <a href="search_page.html">Platform Download</a>
+            <a href="platform_upload_page.html">Platfrom Upload</a>
+            <a href="local_upload_page.html">Local Upload</a>
+            <a href="gallery.html">Gallery</a>
+          </div>
+        </div>
+      </div>
+      <div class="mpic-logo">
+        <a href="main_page.html" class="link-unlogged-main"
+          ><p class="gradient-text">M-PIC</p></a
+        >
+      </div>
+      <div class="unlogged-user">
+        <div href="login_page.html" class="logged-user-section">
+          <p>Username</p>
+          <img
+            id="unlogged-image"
+            src="resources/user.png"
+            alt="unlogged user"
+          />
+        </div>
+      </div>
+    </header>
+
     <div class="content">
-      <header class="unlogged-header">
-        <div class="filler"></div>
-        <div class="mpic-logo">
-          <a href="unlogged_main_page.html" class="link-unlogged-main"
-            ><p class="gradient-text">M-PIC</p></a
-          >
-        </div>
-        <div class="unlogged-user">
-          <a href="login_page.html" class="link-to-loginp">
-            <p>Log in</p>
-            <img id="unlogged-image" src="resources/user.png" alt="unlogged user"
-          /></a>
-        </div>
-      </header>
       <div class="scroller">
         <div class="scroll-item y-scrollable">
           <div class="mpic-concept">
@@ -51,4 +68,6 @@
       </div>
     </div>
   </body>
+
+  <!-- <script src="scripts/prepend_header.js"></script> -->
 </html>

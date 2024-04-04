@@ -1,0 +1,22 @@
+photo editor page
+    filtre
+    zone pt adnotare/decupare
+    
+Photo Focus Page 
+    Platform Upload - from app to platform
+    Local Download - from app to client computer
+    Editor link
+    private/public toggle, api
+
+Platform Download - from platform to app
+    impreuna cu comentarii, taguri, ratings, shares
+    multi-criteria search
+
+Local Upload - from client computer to app
+
+Gallery
+    filters
+        platform
+        colaj
+        etc
+

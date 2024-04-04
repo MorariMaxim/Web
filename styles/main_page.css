@@ -27,6 +27,9 @@ body {
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
 }
+#display-filter-bar{
+  height: 50px;
+}
 
 .scroll-item > :is(p, h1) {
   font-size: 100%;
