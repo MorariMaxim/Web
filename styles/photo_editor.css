@@ -12,6 +12,7 @@ body {
 
 body * {
   box-sizing: border-box;
+  position: relative;
 } 
 #edited-image {
   max-width: 100%;
@@ -62,7 +63,7 @@ body * {
 }
 #actions {
   display: flex;
-
+  column-gap: 10px;
   justify-content: center;
 }
 

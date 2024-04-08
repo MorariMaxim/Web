@@ -1,0 +1,59 @@
+.phact-menu-container {
+  transform-origin: top right;
+  transform: scale(2);
+  top :76px;
+  right: 50px; 
+  position: absolute;
+  z-index: 1000; 
+  padding: 6px; 
+  display: flex;
+  flex-flow: column;
+  margin: auto;
+  align-items: flex-start;
+
+  align-items: center;
+  border: 1px solid grey;
+  overflow: hidden;
+
+  transition: all 0.3s;
+  background-color: #ecf0f3;
+
+  box-shadow: 0px 0.7px 2.7px rgba(0, 0, 0, 0.025),
+    0px 1.7px 6.9px rgba(0, 0, 0, 0.035), 0px 3.5px 14.2px rgba(0, 0, 0, 0.045),
+    0px 7.3px 29.2px rgba(0, 0, 0, 0.055), 0px 20px 80px rgba(0, 0, 0, 0.08);
+}
+
+.dots-container { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background-color: #333;
+  border-radius: 50%;
+  margin: 2px;
+}
+
+.phact-menu {
+  padding-top: 4px; 
+  box-sizing: border-box;
+  text-wrap: nowrap;
+  transition: opacity 0.3s, visibility 0s linear 0.3s;
+}
+
+.phact-menu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.phact-menu li {
+  text-align: center;
+  cursor: pointer;
+}
+ 

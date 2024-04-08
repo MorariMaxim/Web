@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles/photo_gallery_template.css" />
     <link rel="stylesheet" href="styles/gallery.css" />
     <link rel="stylesheet" href="styles/toggle-button.css" />
+    <link rel="stylesheet" href="styles/nice-checkbox.css" />
+    <link rel="stylesheet" href="styles/nice-popup-menu.css" />
   </head>
   <body>
     <main>
@@ -17,7 +19,7 @@
           <div id="toggleCircle" class="toggle-circle"></div>
         </div>
       </div>
-      <div id="filter-container">
+      <div id="filter-wrapper">
         <div id="filter-bar">
           <div class="form-group">
             <label for="keywords">Keywords</label>
@@ -84,7 +86,33 @@
         </div>
       </div>
 
-      <div id="gallery-container">
+      <div id="gallery-wrapper">
+        <div class="phact-menu-container" id="phact-menu-container">
+          <div class="dots-container" id="dots-container">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="phact-menu" id="phact-menu">
+            <ul>
+              <li>
+                <input class="checkbox-input" id="apples" type="checkbox" />
+                <label class="checkbox" for="apples">
+                  <span>
+                    <svg width="12px" height="10px">
+                      <use xlink:href="#check"></use>
+                    </svg>
+                  </span>
+                  <span>Select All</span>
+                </label>
+              </li>
+              <li>
+                <input class="checkbox-input" id="upload" type="checkbox" />
+                <label class="checkbox" for="upload">Upload</label>
+              </li> 
+            </ul>
+          </div>
+        </div>
         <div class="gallery" id="gallery">
           <div class="gallery-item">
             <img src="https://source.unsplash.com/random/400x600" alt="  1" />
@@ -126,55 +154,14 @@
       </div>
     </main>
 
-    <div></div>
+    <svg class="checkbox-symbol">
+      <symbol id="check" viewbox="0 0 12 10">
+        <polyline points="1.5 6 4.5 9 10.5 1" stroke-width="2"></polyline>
+      </symbol>
+    </svg>
   </body>
 
   <script src="scripts/prepend_header.js"></script>
-
-  <script>
-    function myFunction() {
-      alert("Button clicked!");
-    }
-
-    var bar = document.getElementById("filter-container");
-
-    var gallery = document.getElementById("gallery-container");
-
-    var button = document.getElementById("toggleButton");
-    button.addEventListener("click", function () {
-      if (bar.style.display === "none") {
-        bar.style.display = "block";
-        gallery.style.display = "none";
-        gallery.style.backgroundColor = RED;
-      } else {
-        bar.style.display = "none";
-        gallery.style.display = "block";
-      }
-    });
-
-    var toggleButton = document.getElementById("toggleButton");
-
-    toggleButton.addEventListener("click", function () {
-      // Toggle the 'active' class when clicked
-      toggleButton.classList.toggle("active");
-    });
-
-    
-
-    var toggleCircle = document.getElementById("toggleCircle");
-
-    var computedHeight = window.getComputedStyle(toggleCircle).height;
-
-    toggleCircle.style.width = computedHeight;
-
-    window.addEventListener("resize", function () {
-      var toggleButton = document.getElementById("toggleButton"); 
-
-      var toggleCircle = document.getElementById("toggleCircle");
-
-      var computedHeight = window.getComputedStyle(toggleCircle).height;
-
-      toggleCircle.style.width = computedHeight;
-    });
-  </script>
+  <script src="scripts/gallery.js"></script>
+  <script src="scripts/nice-popup-menu.js"></script>
 </html>
