@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Editor</title>
+    <link rel="stylesheet" href="styles/logged_header.css" />
+    <link rel="stylesheet" href="styles/photo_editor.css" />
+  </head>
+  <body>
+    <div id="upload-section">
+      <input type="file" id="upload-input" />
+      <button class="btn" onclick="uploadImage()">Upload</button>
+    </div>
+    <div id="image-container">
+      <img id="edited-image" src="resources/th.jpg" />
+    </div>
+    <div id="edit-panel">
+      <h2>Edit Image</h2>
+      <form id="filter-form">
+        <div id="filters">
+          <div class="filer-item">
+            <label for="filter-select">Select Filter:</label>
+            <select id="filter-select">
+              <option value="sepia">sepia</option>
+              <option value="invert">invert</option>
+              <option value="brightness">brightness</option>
+              <option value="contrast">contrast</option>
+              <option value="grayscale">grayscale</option>
+              <option value="opacity">Invert</option>
+              <!-- Add more filter options as needed -->
+            </select>
+          </div>
+          <div class="filer-item">
+            <label for="filter-slider">Filter Strength:</label>
+            <input
+              type="range"
+              id="filter-slider"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
+        </div>
+        <br />
+        <div id="actions">
+          <button class="btn" type="button" onclick="applyFilter()">
+            Apply
+          </button>
+          <button class="btn" type="button" onclick="undoFilter()">Undo</button>
+          <button class="btn" type="button" onclick="resetFilter()">
+            Reset
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script src="scripts/photo_editor.js"></script>
+    <script src="scripts/prepend_header.js"></script>
+  </body>
+</html>

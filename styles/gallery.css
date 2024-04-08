@@ -1,7 +1,5 @@
 main {
-  display: grid;
-
-  grid-template-columns: 1fr 10fr;
+  display: flex;
 
   height: calc(100vh - 48px);
 }
@@ -19,7 +17,8 @@ main {
   column-gap: 10px;
   align-items: center;
 
-  height: calc(100vh - 48px);
+  /* height: calc(100vh - 48px); */
+  height: 100%;
 
   box-sizing: border-box;
 }
@@ -30,9 +29,20 @@ main {
 }
 #display-filter-bar {
   display: none;
-  background-color: #ffffff;
+  background-color: #ecf0f3;
 
+  box-shadow: 0px 0.7px 2.7px rgba(0, 0, 0, 0.025),
+    0px 1.7px 6.9px rgba(0, 0, 0, 0.035), 0px 3.5px 14.2px rgba(0, 0, 0, 0.045),
+    0px 7.3px 29.2px rgba(0, 0, 0, 0.055), 0px 20px 80px rgba(0, 0, 0, 0.08);
   border: none;
+
+  align-items: center;
+  justify-content: center;
+
+  column-gap: 10px;
+
+  color: black;
+  font-size: large;
 }
 @media screen and (max-width: 730px) {
   #filter-bar {
@@ -40,7 +50,7 @@ main {
     flex-direction: row;
   }
   main {
-    grid-template-columns: 1fr;
+    flex-flow: column;
   }
   .form-group {
     flex: 0 0 calc(50% - 10px);
@@ -50,7 +60,7 @@ main {
   }
   #display-filter-bar {
     height: 50px;
-    display: block;
+    display: flex;
   }
 }
 
@@ -75,5 +85,14 @@ input[type="date"] {
   overflow-y: auto;
   scroll-snap-type: y mandatory;
 
-  height: calc(100vh - 48px);
+  /* height: calc(100vh - 48px); */
+}
+
+
+#filter-container {
+  flex: 1;
+}
+
+#gallery-container {
+  flex:10;
 }

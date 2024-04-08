@@ -6,10 +6,17 @@
     <title>Gallery</title>
     <link rel="stylesheet" href="styles/photo_gallery_template.css" />
     <link rel="stylesheet" href="styles/gallery.css" />
+    <link rel="stylesheet" href="styles/toggle-button.css" />
   </head>
   <body>
     <main>
-      <div id="display-filter-bar"><img src="" alt="" />Toggle Filter Bar</div>
+      <div id="display-filter-bar">
+        <img src="" alt="" />
+        <p>Filters</p>
+        <div id="toggleButton" class="toggle-button">
+          <div id="toggleCircle" class="toggle-circle"></div>
+        </div>
+      </div>
       <div id="filter-container">
         <div id="filter-bar">
           <div class="form-group">
@@ -18,7 +25,7 @@
               type="text"
               id="keyword"
               name="keyword"
-              placeholder="Photo keywords ... "
+              placeholder="  keywords ... "
             />
           </div>
 
@@ -49,7 +56,7 @@
               type="text"
               id="keyword"
               name="keyword"
-              placeholder="Photo keywords ... "
+              placeholder="  keywords ... "
             />
           </div>
 
@@ -80,76 +87,40 @@
       <div id="gallery-container">
         <div class="gallery" id="gallery">
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/400x600"
-              alt="Photo 1"
-            />
+            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/800x400"
-              alt="Photo 2"
-            />
+            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/600x800"
-              alt="Photo 3"
-            />
+            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/400x400"
-              alt="Photo 4"
-            />
+            <img src="https://source.unsplash.com/random/400x400" alt="4" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/600x600"
-              alt="Photo 5"
-            />
+            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/800x600"
-              alt="Photo 6"
-            />
+            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/400x600"
-              alt="Photo 1"
-            />
+            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/800x400"
-              alt="Photo 2"
-            />
+            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/600x800"
-              alt="Photo 3"
-            />
+            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/400x400"
-              alt="Photo 4"
-            />
+            <img src="https://source.unsplash.com/random/400x400" alt="  4" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/600x600"
-              alt="Photo 5"
-            />
+            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
           </div>
           <div class="gallery-item">
-            <img
-              src="https://source.unsplash.com/random/800x600"
-              alt="Photo 6"
-            />
+            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
           </div>
         </div>
       </div>
@@ -169,7 +140,7 @@
 
     var gallery = document.getElementById("gallery-container");
 
-    var button = document.getElementById("display-filter-bar");
+    var button = document.getElementById("toggleButton");
     button.addEventListener("click", function () {
       if (bar.style.display === "none") {
         bar.style.display = "block";
@@ -179,6 +150,31 @@
         bar.style.display = "none";
         gallery.style.display = "block";
       }
+    });
+
+    var toggleButton = document.getElementById("toggleButton");
+
+    toggleButton.addEventListener("click", function () {
+      // Toggle the 'active' class when clicked
+      toggleButton.classList.toggle("active");
+    });
+
+    
+
+    var toggleCircle = document.getElementById("toggleCircle");
+
+    var computedHeight = window.getComputedStyle(toggleCircle).height;
+
+    toggleCircle.style.width = computedHeight;
+
+    window.addEventListener("resize", function () {
+      var toggleButton = document.getElementById("toggleButton"); 
+
+      var toggleCircle = document.getElementById("toggleCircle");
+
+      var computedHeight = window.getComputedStyle(toggleCircle).height;
+
+      toggleCircle.style.width = computedHeight;
     });
   </script>
 </html>

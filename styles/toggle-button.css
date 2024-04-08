@@ -1,0 +1,33 @@
+.toggle-button {
+  position: relative;
+  background-color: transparent;
+  border: 2px solid #06090c;
+  border-radius: 20px;
+  width: 150px;
+  height: 30px;
+  cursor: pointer;
+  transition: 0.3s ease;
+
+  display: flex;
+  align-items: center;
+}
+
+.toggle-circle {
+  position: absolute;
+  background-color: #000;
+  height: 80%;
+
+  left: 3%;
+  border-radius: 50%;
+  transition: 0.3s ease;
+}
+
+.toggle-button.active {
+  border: 2px solid #007bff;
+}
+
+.toggle-button.active .toggle-circle {
+  background-color: #007bff;
+
+  left: 81%;
+}
