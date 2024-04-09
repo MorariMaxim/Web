@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Local Upload Page</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-flow: column;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        flex-flow: column;
+      }
+
+      .file-upload-container {
+        flex: 3;
+        overflow-y: auto;
+        scrollbar-width: none;
+        width: 50%;
+        height: 50vh;
+        border: 2px dashed #ccc;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+      }
+      .file-upload-container:hover {
+        border-color: #333;
+      }
+      input[type="file"] {
+        display: none;
+      }
+
+      .file-upload-text {
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .upload-content {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .selected-image {
+        margin: 5px;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      .hint-block {
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+        align-items: center; 
+
+        flex: 1; 
+      }
+
+      .hint-block * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .upload-button-section {
+        flex: 1;
+        display: flex;
+        flex-flow: column;
+
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="hint-block">
+        <h1>Drag & Drop files here</h1>
+        <h1>or</h1>
+        <h1>Click to Choose Files</h1>
+      </div>
+
+      <input type="file" id="fileInput" multiple accept="image/*" />
+      <label for="fileInput" class="file-upload-container" id="fileDropArea">
+        <div class="upload-content" id="upload-content"></div>
+      </label>
+
+      <div class="upload-button-section">
+        <button class="nice-button">Upload</button>
+      </div>
+    </main>
+  </body>
+
+  <script src="scripts/prepend_header.js"></script>
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const uploadContent = document.getElementById("upload-content");
+    const fileDropArea = document.getElementById("fileDropArea");
+
+    fileInput.addEventListener("change", handleFileSelect);
+
+    function handleFileSelect(event) {
+      const files = event.target.files;
+
+      // Clear previous images
+      uploadContent.innerHTML = "";
+
+      for (const element of files) {
+        const file = element;
+        if (!file.type.startsWith("image/")) {
+          continue; // Skip non-image files
+        }
+
+        const img = document.createElement("img");
+        img.classList.add("selected-image");
+        img.file = file;
+
+        const reader = new FileReader();
+        reader.onload = (function (image) {
+          return function (e) {
+            image.src = e.target.result;
+          };
+        })(img);
+
+        reader.readAsDataURL(file);
+        uploadContent.appendChild(img);
+      }
+    }
+
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+      fileDropArea.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    fileDropArea.addEventListener("drop", handleDrop, false);
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+
+      e.target.files = files;
+      handleFileSelect(e);
+    }
+  </script>
+</html>

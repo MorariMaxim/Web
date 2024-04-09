@@ -1,10 +1,10 @@
-var bar = document.getElementById("filter-wrapper");
+let bar = document.getElementById("filter-phact-menu");
 
-var gallery = document.getElementById("gallery-wrapper");
+let gallery = document.getElementById("gallery-wrapper");
 
-var button = document.getElementById("toggleButton");
+let button = document.getElementById("toggleButton");
 button.addEventListener("click", function () {
-  var computedStyle = window.getComputedStyle(bar);
+  let computedStyle = window.getComputedStyle(bar);
 
   if (computedStyle.display === "none") {
     console.log("first");
@@ -17,23 +17,46 @@ button.addEventListener("click", function () {
   }
 });
 
-var toggleButton = document.getElementById("toggleButton");
+let toggleButton = document.getElementById("toggleButton");
 
 toggleButton.addEventListener("click", function () {
   toggleButton.classList.toggle("active");
 });
 
-var toggleCircle = document.getElementById("toggleCircle");
+let toggleCircle = document.getElementById("toggleCircle");
 
-var computedHeight = window.getComputedStyle(toggleCircle).height;
+let computedHeight = window.getComputedStyle(toggleCircle).height;
 
 toggleCircle.style.width = computedHeight;
 
 window.addEventListener("resize", function () {
-  var toggleCircle = document.getElementById("toggleCircle");
+  let toggleCircle = document.getElementById("toggleCircle");
 
-  var computedHeight = window.getComputedStyle(toggleCircle).height;
+  let computedHeight = window.getComputedStyle(toggleCircle).height;
 
   toggleCircle.style.width = computedHeight;
 });
- 
+
+let images = document.querySelectorAll(".gallery-item img");
+
+images.forEach((image) => {
+  image.addEventListener("click", function () {
+    image.classList.toggle("selected-image");
+  });
+});
+
+let selectAlls = document.querySelectorAll(".SelectAll");
+
+selectAlls.forEach((selector) => {
+  selector.addEventListener("click", function () {
+    let images = document.querySelectorAll(".gallery-item img");
+
+    images.forEach((image) => {
+      if (selector.checked) {
+        image.classList.add("selected-image");
+      } else {
+        image.classList.remove("selected-image");
+      }
+    });
+  });
+});

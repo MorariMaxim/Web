@@ -1,8 +1,8 @@
 .phact-menu-container {
   transform-origin: top right;
-  transform: scale(2);
-  top :76px;
-  right: 50px; 
+  transform: scale(1.5);
+  top :55px;
+  right: 25px; 
   position: absolute;
   z-index: 1000; 
   padding: 6px; 

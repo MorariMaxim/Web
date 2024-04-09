@@ -1,9 +1,10 @@
 .toggle-button {
+  margin-left: 10px;
   position: relative;
   background-color: transparent;
   border: 2px solid #06090c;
   border-radius: 20px;
-  width: 150px;
+  width: 100px;
   height: 30px;
   cursor: pointer;
   transition: 0.3s ease;
@@ -29,5 +30,5 @@
 .toggle-button.active .toggle-circle {
   background-color: #007bff;
 
-  left: 81%;
+  left: 73%;
 }

@@ -19,7 +19,6 @@ body {
 main {
   max-width: 600px;
   margin: 20px auto;
-  position: relative;
 }
 
 .form-group {

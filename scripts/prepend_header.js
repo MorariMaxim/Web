@@ -37,8 +37,7 @@ let logged_header = `<header class="logged-header">
     <div class="line"></div>
     <div class="line"></div>
     <div class="popout-menu">
-      <a href="search_page.html">Platform Download</a>
-      <a href="platform_upload_page.html">Platfrom Upload</a>
+      <a href="search_page.html">Platform Download</a> 
       <a href="local_upload_page.html">Local Upload</a>
       <a href="gallery.html">Gallery</a>
     </div>
@@ -81,4 +80,6 @@ linkElement.rel = "stylesheet";
 linkElement.type = "text/css";
 linkElement.href = "styles/common.css";
 
-document.head.appendChild(linkElement);
+let firstChild = document.head.firstChild;
+
+document.head.insertBefore(linkElement, firstChild);
