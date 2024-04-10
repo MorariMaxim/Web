@@ -33,7 +33,7 @@
     <div class="image-container">
       <img
         id="mainImage"
-        src="resources/th.jpg"
+        src="../resources/th.jpg"
         alt="Image"
         style="width: 100%; height: 100%"
       />
@@ -108,7 +108,7 @@
         }
       }
 
-      function updateRectangle() {
+      function updateRectangle() { 
         let top = Math.min(handler1.offsetTop, handler2.offsetTop);
         let left = Math.min(handler1.offsetLeft, handler2.offsetLeft);
         let width =
@@ -128,6 +128,7 @@
         rectangle.style.left = left + "px";
         rectangle.style.width = width + "px";
         rectangle.style.height = height + "px";
+ 
       }
 
       makeDraggable(document.getElementById("handler1"));
