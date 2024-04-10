@@ -113,13 +113,13 @@
     function handleFileSelect(event) {
       const files = event.target.files;
 
-      // Clear previous images
+      
       uploadContent.innerHTML = "";
 
       for (const element of files) {
         const file = element;
         if (!file.type.startsWith("image/")) {
-          continue; // Skip non-image files
+          continue; 
         }
 
         const img = document.createElement("img");

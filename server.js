@@ -79,7 +79,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-// Define the port to listen on
+
 const PORT = 3000;
 
 server.listen(PORT, () => {
