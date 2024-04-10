@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>M-PIC - Documentatie</title>
+  </head>
+  <body>
+    <section>
+      <h2>Principalele Functionalitati</h2>
+
+      <article>
+        <h3>1. Autentificare si Profil</h3>
+        <p>Utilizatorii isi vor putea crea un profil si loga pe el</p>
+        <p>
+          Cu fiecare profil sunt asociate imagini descarcate de pe platforme sau
+          incarcate de pe computerul utilizatorului
+        </p>
+      </article>
+
+      <article>
+        <h3>2. Descarcarea de imagini de pe anumite platforme</h3>
+        <p>Platformele disponibile:</p>
+        <ul>
+          <li>Imgur</li>
+          <li>...</li>
+        </ul>
+
+        <p>Aceste imagini sunt din 2 categorii:</p>
+        <ul>
+          <li>Imagini personale de pe platforma</li>
+          <li>
+            Imagini cautate dupa numite criterii, nu obligatoriu apartinand
+            utilizatorului pe platforma
+          </li>
+        </ul>
+
+        <p>La dorinta se pot descarca si metadata legate de imagini:</p>
+        <ul>
+          <li>Comentarii</li>
+          <li>Evaluări</li>
+          <li>Etichete</li>
+          <li>Număr de partajări</li>
+        </ul>
+
+        <p>
+          Aceasta functionalitate poate fi accesata prin pagina "Platform
+          Download" din popout menu de pe headerul aplicatiei
+        </p>
+        <p>
+          Utilizatorul poate alege pentru cautare platforma, keywords, rating
+          minim, etc.
+        </p>
+        <p>
+          Efectul cautarii va fi redirectionarea la o pagina ce afiseaza
+          rezultatele cautarii
+        </p>
+
+        <p>
+          Imaginile dorite pot fi selectate si asociate efectiv cu
+          profilul utilizatorului
+        </p>
+      </article>
+      <article>
+        <h3>3. Photo Upload</h3>
+        <p>Se pot uploada imagini de pe computerul utilizatorului</p>
+        <p>Pentru asta a se vedea pagina "Local Upload" din popout menu</p>
+
+        <p>
+          Imaginile pot fi selectate prin drag and drop sau cu ajutorul file
+          system managerului, e.g. "File Explorer"
+        </p>
+      </article>
+
+      <article>
+        <h3>4. Vizualizarea de imagini</h3>
+        <p>Imaginile asociate unui profil pot fi vizualizate convenabil</p>
+
+        <p>
+          Pagina de vizualizare se numeste "Gallery" si se gaseste in popout
+          menu(coltul din stanga sus)
+        </p>
+
+        <p>
+          Imaginile vizualizate se pot filtra dupa criterii asemanatoare cu cele
+          de pe pagina "Platform Download"
+        </p>
+
+        <p>
+          Imaginile pot fi selectate si se poate efectua operatii asupra lor,
+          spre exemplu "upload," "download," "delete," etc.
+        </p>
+      </article>
+      <article>
+        <h3>5. Photo Focus</h3>
+        <p>
+          Oricare imagine se poate vizualiza izolata de altele, in contrast cu
+          pagina "Gallery"
+        </p>
+
+        <p>
+          Pentru imaginea data se vor mai si afisa comentarii, numarul de likuri
+          asociate, etc. , daca este cazul
+        </p>
+
+        <p>
+          Pentru a accesa aceasta pagina, se apasa butonul "Focus" din meniul de
+          actiuni din pagina "Gallery"
+        </p>
+
+        <p>
+          Tot de pe aceasta pagina, apasand butonul "Edit", se poate accesa
+          urmatorul grup functional
+        </p>
+      </article>
+      <article>
+        <h3>6. Editarea Imaginilor</h3>
+        <p>Imaginile se pot edita in cateva moduri</p>
+        <ul>
+          <li>
+            Aplicarea de filtre precum "sepia," "invert," "contrast,"
+            "grayscale"
+          </li>
+          <li>Adnotarea unei parti a imaginii cu taguri</li>
+        </ul>
+        <p>
+          La fel se pot decupa parti ale imaginii cu ajutorul unui dreptunghi
+          mobil deasupra ei
+        </p>
+      </article>
+
+      <article>
+        <h3>7. API</h3>
+        <p>
+          Aplicatia ofera un API pentru pentru accesarea imaginilor prin
+          intermediul unui serviciu REST
+        </p>
+        <p>API se gasestea la /API</p>
+
+        <p>
+          Pe ramura /API/get#id=IMAGE_ID se poate descarca o anumita imagine
+          indicand id-ul asociat ei
+        </p>
+        <p>
+          Id-urile se pot primi de pe ramura /API/search#... indicand anumite
+          criterii:
+        </p>
+        <ul>
+          <li>keywords=KEYWORD1,...KEYWORDN</li>
+          <li>minRating=RATING</li>
+          <li>platform=PLATFORM</li>
+          <li>altele ...</li>
+        </ul>
+      </article>
+    </section>
+  </body>
+</html>

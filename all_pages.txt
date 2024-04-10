@@ -2,7 +2,7 @@ photo editor page
     filtre
     zone pt adnotare/decupare
     
-Photo Focus Page 
+Photo Focus Page
     Platform Upload - from app to platform
     Local Download - from app to client computer
     Editor link
@@ -19,4 +19,9 @@ Gallery
         platform
         colaj
         etc
+
+
+
+M-PIC
+Se dorește realizarea unei aplicații web de tip agregator prin intermediul căreia un utilizator va putea efectua managementul fotografiilor pe care le are stocate pe diverse platforme ce permit distribuirea de fotografii (e.g., Instagram, Unsplash, Reddit, Twitter etc.). Aplicația va putea să preia imaginile personale din măcar două dintre platformele menționate împreună cu comentariile, evaluarile (ratings) sau alte elemente de interes despre acestea: tag-uri, numarul de partajari, dimensiuni etc. Sistemul va pune la dispozitie facilitati de cautare multi-criteriala. Suplimentar, se va oferi posibilitatea de plasare (upload) a unor fotografii noi pe aceste platforme. Continuturile grafice vor putea fi editate în cadrul aplicației prin aplicarea de diverse filtre CSS, definirea de măști sau de zone de interes care pot fi adnotate cu diverse cuvinte-cheie sau utilizate pentru a decupa zone de imagini ce vor putea fi folosite în colaje de fotografii sau în realizarea de diverse animații CSS. Imaginile, împreuna cu prelucrările efectuate pe acestea, vor putea fi puse la dispoziție public (sau privat) prin intermediul unui serviciu Web REST/GraphQL. Bonus: prelucrarea meta-datelor EXIF, IPTC, XMP sau ICC prezente in fotografii.
 
