@@ -61,8 +61,8 @@ let logged = true;
 let header = logged ? logged_header : unlogged_header;
 
 let stylesheet = logged
-  ? "styles/logged_header.css"
-  : "styles/unlogged_header.css";
+  ? "../styles/logged_header.css"
+  : "../styles/unlogged_header.css";
 
 let body = document.body;
 
@@ -78,7 +78,7 @@ document.head.appendChild(linkElement);
 linkElement = document.createElement("link");
 linkElement.rel = "stylesheet";
 linkElement.type = "text/css";
-linkElement.href = "styles/common.css";
+linkElement.href = "../styles/common.css";
 
 let firstChild = document.head.firstChild;
 

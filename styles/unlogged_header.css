@@ -65,7 +65,7 @@
     rgba(77, 6, 95, 1) 560%
   );
   background-clip: text;
-  color: transparent; /* Make the original text color transparent */
+  color: transparent;  
 }
 
 .link-unlogged-main {
