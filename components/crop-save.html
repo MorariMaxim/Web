@@ -5,7 +5,7 @@
     <style>
       .image-container {
         position: relative;
-        width: 500px; 
+        width: 500px;
         overflow: hidden;
       }
       .handler {
@@ -45,141 +45,141 @@
     <button id="saveButton">Save Image</button>
 
     <script>
-      let cropX, cropY, cropWidth, cropHeight;
-      let parentWidth = handler1.parentElement.offsetWidth;
-      let parentHeight = handler1.parentElement.offsetHeight;
-      let realImageWidth, realImageHeight;
-
       let mainImage = document.getElementById("mainImage");
-      let tempImage = new Image();
-      tempImage.src = mainImage.src;
-      tempImage.onload = function () {
-        realImageWidth = tempImage.width;
-        realImageHeight = tempImage.height;
-      };
-
-      function makeDraggable(element) {
-        let differenceX = 0,
-          differenceY = 0,
-          lastMouseX = 0,
-          lastMouseY = 0;
-
-        let handler1 = document.getElementById("handler1");
-        let handler2 = document.getElementById("handler2");
-        let rectangle = document.getElementById("rectangle");
-
-        let handlerWidth = handler1.offsetWidth;
-        let handlerHeight = handler1.offsetHeight;
-
-        element.onmousedown = dragMouseDown;
-        function dragMouseDown(e) {
-          e.preventDefault();
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          e.preventDefault();
-          differenceX = e.clientX - lastMouseX;
-          differenceY = e.clientY - lastMouseY;
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          let newTop = element.offsetTop + differenceY;
-          let newLeft = element.offsetLeft + differenceX;
-
-          if (
-            newTop >= 0 &&
-            newLeft >= 0 &&
-            newTop <= parentHeight - handlerHeight &&
-            newLeft <= parentWidth - handlerWidth
-          ) {
-            element.style.top = newTop + "px";
-            element.style.left = newLeft + "px";
-          }
-
-          updateRectangle();
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-        }
-      }
-
-      function updateRectangle() { 
-        let top = Math.min(handler1.offsetTop, handler2.offsetTop);
-        let left = Math.min(handler1.offsetLeft, handler2.offsetLeft);
-        let width =
-          Math.abs(handler1.offsetLeft - handler2.offsetLeft) +
-          handler1.offsetWidth;
-        let height =
-          Math.abs(handler1.offsetTop - handler2.offsetTop) +
-          handler1.offsetHeight;
-
-        cropX = left;
-        cropY = top;
-        cropWidth = width;
-        cropHeight = height;
-
-        let rectangle = document.getElementById("rectangle");
-        rectangle.style.top = top + "px";
-        rectangle.style.left = left + "px";
-        rectangle.style.width = width + "px";
-        rectangle.style.height = height + "px";
- 
-      }
-
-      makeDraggable(document.getElementById("handler1"));
-      makeDraggable(document.getElementById("handler2"));
-
-      updateRectangle();
-
-      
-      document.getElementById("saveButton").onclick = function () {
-        let mainImage = document.getElementById("mainImage");
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
+      mainImage.onload = function () {
+        let cropX, cropY, cropWidth, cropHeight;
+        let parentWidth = handler1.parentElement.offsetWidth;
+        let parentHeight = handler1.parentElement.offsetHeight;
+        let realImageWidth, realImageHeight;
 
         let tempImage = new Image();
         tempImage.src = mainImage.src;
         tempImage.onload = function () {
-          console.clear();
-          let widthProportion = realImageWidth / mainImage.width;
-          let heightPropotion = realImageHeight / mainImage.height;
+          realImageWidth = tempImage.width;
+          realImageHeight = tempImage.height;
+        };
 
-          canvas.width = cropWidth * widthProportion;
-          canvas.height = cropHeight * heightPropotion;
+        function makeDraggable(element) {
+          let differenceX = 0,
+            differenceY = 0,
+            lastMouseX = 0,
+            lastMouseY = 0;
 
-          console.log(widthProportion);
-          console.log(heightPropotion);
+          let handler1 = document.getElementById("handler1");
+          let handler2 = document.getElementById("handler2");
+          let rectangle = document.getElementById("rectangle");
 
-          console.log(canvas.width);
-          console.log(canvas.height);
+          let handlerWidth = handler1.offsetWidth;
+          let handlerHeight = handler1.offsetHeight;
 
-          console.log(cropX * widthProportion);
-          console.log(cropY * heightPropotion);
-          console.log(cropWidth * widthProportion);
-          console.log(cropHeight * heightPropotion);
+          element.onmousedown = dragMouseDown;
+          function dragMouseDown(e) {
+            e.preventDefault();
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+          }
 
-          ctx.drawImage(
-            tempImage,
-            cropX * widthProportion,
-            cropY * heightPropotion,
-            cropWidth * widthProportion,
-            cropHeight * heightPropotion,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
+          function elementDrag(e) {
+            e.preventDefault();
+            differenceX = e.clientX - lastMouseX;
+            differenceY = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            let newTop = element.offsetTop + differenceY;
+            let newLeft = element.offsetLeft + differenceX;
 
-          let image = canvas.toDataURL("image/jpeg", 0.7);
-          let downloadLink = document.createElement("a");
-          downloadLink.href = image;
-          downloadLink.download = "cropped_image.jpg";
-          downloadLink.click();
+            if (
+              newTop >= 0 &&
+              newLeft >= 0 &&
+              newTop <= parentHeight - handlerHeight &&
+              newLeft <= parentWidth - handlerWidth
+            ) {
+              element.style.top = newTop + "px";
+              element.style.left = newLeft + "px";
+            }
+
+            updateRectangle();
+          }
+
+          function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+          }
+        }
+
+        function updateRectangle() {
+          let top = Math.min(handler1.offsetTop, handler2.offsetTop);
+          let left = Math.min(handler1.offsetLeft, handler2.offsetLeft);
+          let width =
+            Math.abs(handler1.offsetLeft - handler2.offsetLeft) +
+            handler1.offsetWidth;
+          let height =
+            Math.abs(handler1.offsetTop - handler2.offsetTop) +
+            handler1.offsetHeight;
+
+          cropX = left;
+          cropY = top;
+          cropWidth = width;
+          cropHeight = height;
+
+          let rectangle = document.getElementById("rectangle");
+          rectangle.style.top = top + "px";
+          rectangle.style.left = left + "px";
+          rectangle.style.width = width + "px";
+          rectangle.style.height = height + "px";
+        }
+
+        makeDraggable(document.getElementById("handler1"));
+        makeDraggable(document.getElementById("handler2"));
+
+        updateRectangle();
+
+        document.getElementById("saveButton").onclick = function () {
+          let mainImage = document.getElementById("mainImage");
+          let canvas = document.createElement("canvas");
+          let ctx = canvas.getContext("2d");
+
+          let tempImage = new Image();
+          tempImage.src = mainImage.src;
+          tempImage.onload = function () {
+            console.clear();
+            let widthProportion = realImageWidth / mainImage.width;
+            let heightPropotion = realImageHeight / mainImage.height;
+
+            canvas.width = cropWidth * widthProportion;
+            canvas.height = cropHeight * heightPropotion;
+
+            console.log(widthProportion);
+            console.log(heightPropotion);
+
+            console.log(canvas.width);
+            console.log(canvas.height);
+
+            console.log(cropX * widthProportion);
+            console.log(cropY * heightPropotion);
+            console.log(cropWidth * widthProportion);
+            console.log(cropHeight * heightPropotion);
+
+            ctx.drawImage(
+              tempImage,
+              cropX * widthProportion,
+              cropY * heightPropotion,
+              cropWidth * widthProportion,
+              cropHeight * heightPropotion,
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+
+            let image = canvas.toDataURL("image/jpeg", 0.7);
+            let downloadLink = document.createElement("a");
+            downloadLink.href = image;
+            downloadLink.download = "cropped_image.jpg";
+            downloadLink.click();
+          };
         };
       };
     </script>
