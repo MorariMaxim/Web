@@ -1,186 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Image with Rectangle Handlers</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Details</title>
+    <link rel="stylesheet" href="styles.css" />
     <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f2f2f2;
+      }
+
       .image-container {
-        position: relative;
-        width: 500px; 
-        overflow: hidden;
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
-      .handler {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
+
+      .image-container img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
       }
-      #handler1 {
-        top: 50px;
-        left: 50px;
+
+      .image-details {
+        margin-top: 20px;
       }
-      #handler2 {
-        top: 150px;
-        left: 150px;
+
+      .image-details h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
       }
-      .rectangle {
-        position: absolute;
-        border: 2px dotted rgb(156, 156, 169);
-        pointer-events: none;
+
+      .image-details ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .image-details li {
+        margin-bottom: 5px;
+      }
+
+      .comments-section {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .comments-section h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      .comment {
+        margin-bottom: 15px;
+      }
+
+      .comment .user {
+        font-weight: bold;
+      }
+
+      .bolder-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
       }
     </style>
   </head>
   <body>
     <div class="image-container">
-      <img
-        id="mainImage"
-        src="resources/th.jpg"
-        alt="Image"
-        style="width: 100%; height: 100%"
-      />
-      <div id="handler1" class="handler"></div>
-      <div id="handler2" class="handler"></div>
-      <div id="rectangle" class="rectangle"></div>
+      <img src="resources/th.jpg" alt="Image Description" />
+      <div class="image-details">
+        <h2>Image Details</h2>
+        <ul>
+          <li>Likes: 100</li>
+          <li>Shares: 50</li>
+          <li>Comments: 20</li>
+        </ul>
+      </div>
     </div>
 
-    <button id="saveButton">Save Image</button>
-
-    <script>
-      let cropX, cropY, cropWidth, cropHeight;
-      let parentWidth = handler1.parentElement.offsetWidth;
-      let parentHeight = handler1.parentElement.offsetHeight;
-      let realImageWidth, realImageHeight;
-
-      let mainImage = document.getElementById("mainImage");
-      let tempImage = new Image();
-      tempImage.src = mainImage.src;
-      tempImage.onload = function () {
-        realImageWidth = tempImage.width;
-        realImageHeight = tempImage.height;
-      };
-
-      function makeDraggable(element) {
-        let differenceX = 0,
-          differenceY = 0,
-          lastMouseX = 0,
-          lastMouseY = 0;
-
-        let handler1 = document.getElementById("handler1");
-        let handler2 = document.getElementById("handler2");
-        let rectangle = document.getElementById("rectangle");
-
-        let handlerWidth = handler1.offsetWidth;
-        let handlerHeight = handler1.offsetHeight;
-
-        element.onmousedown = dragMouseDown;
-        function dragMouseDown(e) {
-          e.preventDefault();
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          e.preventDefault();
-          differenceX = e.clientX - lastMouseX;
-          differenceY = e.clientY - lastMouseY;
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          let newTop = element.offsetTop + differenceY;
-          let newLeft = element.offsetLeft + differenceX;
-
-          if (
-            newTop >= 0 &&
-            newLeft >= 0 &&
-            newTop <= parentHeight - handlerHeight &&
-            newLeft <= parentWidth - handlerWidth
-          ) {
-            element.style.top = newTop + "px";
-            element.style.left = newLeft + "px";
-          }
-
-          updateRectangle();
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-        }
-      }
-
-      function updateRectangle() {
-        let top = Math.min(handler1.offsetTop, handler2.offsetTop);
-        let left = Math.min(handler1.offsetLeft, handler2.offsetLeft);
-        let width =
-          Math.abs(handler1.offsetLeft - handler2.offsetLeft) +
-          handler1.offsetWidth;
-        let height =
-          Math.abs(handler1.offsetTop - handler2.offsetTop) +
-          handler1.offsetHeight;
-
-        cropX = left;
-        cropY = top;
-        cropWidth = width;
-        cropHeight = height;
-
-        let rectangle = document.getElementById("rectangle");
-        rectangle.style.top = top + "px";
-        rectangle.style.left = left + "px";
-        rectangle.style.width = width + "px";
-        rectangle.style.height = height + "px";
-      }
-
-      makeDraggable(document.getElementById("handler1"));
-      makeDraggable(document.getElementById("handler2"));
-
-      updateRectangle();
-
-      
-      document.getElementById("saveButton").onclick = function () {
-        let mainImage = document.getElementById("mainImage");
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-
-        let tempImage = new Image();
-        tempImage.src = mainImage.src;
-        tempImage.onload = function () {
-          console.clear();
-          let widthProportion = realImageWidth / mainImage.width;
-          let heightPropotion = realImageHeight / mainImage.height;
-
-          canvas.width = cropWidth * widthProportion;
-          canvas.height = cropHeight * heightPropotion;
-
-          console.log(widthProportion);
-          console.log(heightPropotion);
-
-          console.log(canvas.width);
-          console.log(canvas.height);
-
-          console.log(cropX * widthProportion);
-          console.log(cropY * heightPropotion);
-          console.log(cropWidth * widthProportion);
-          console.log(cropHeight * heightPropotion);
-
-          ctx.drawImage(
-            tempImage,
-            cropX * widthProportion,
-            cropY * heightPropotion,
-            cropWidth * widthProportion,
-            cropHeight * heightPropotion,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
-
-          let image = canvas.toDataURL("image/jpeg", 0.7);
-          let downloadLink = document.createElement("a");
-          downloadLink.href = image;
-          downloadLink.download = "cropped_image.jpg";
-          downloadLink.click();
-        };
-      };
-    </script>
+    <div class="comments-section">
+      <h2>Comments</h2>
+      <div class="comment">
+        <span class="user">User123:</span>
+        <p>This is an amazing photo!</p>
+      </div>
+      <!-- More comments can be added here -->
+    </div>
   </body>
 </html>

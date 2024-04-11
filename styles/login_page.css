@@ -11,7 +11,7 @@ body {
   height: calc(100vh - 50px);
 }
 
-.login-form { 
+.login-form {
   background-color: #ffffff;
   padding: 30px;
   border-radius: 8px;
@@ -28,8 +28,51 @@ h1 {
 
 .form-group {
   margin-bottom: 20px;
+  height: 50px;
+}
+#password-visibility-button {
+  height: 90%;
+}
+#password-visibility-button:hover,
+#authAction-toggle:hover {
+  cursor: pointer;
 }
 
+#submit-container {
+  display: flex;
+
+  margin-top: 40px;
+
+  align-items: center;
+
+  justify-content: space-evenly;
+}
+.password-container {
+  display: flex;
+
+  column-gap: 10px;
+
+  height: 100%;
+}
+#password-input {
+  font-style: italic;
+
+  color: #333; 
+}
+
+#password-input,
+#username-input,
+#authAction-toggle {
+  font-size: 18px; 
+  font-weight: 600; 
+  color: #333; 
+}
+
+#authAction-toggle:hover {
+  text-decoration: underline;
+  color: blue;
+  font-size: 21px;
+}
 label {
   display: block;
   font-weight: bold;
@@ -66,6 +109,6 @@ button {
 }
 
 button:hover {
-  transform: scale(1.1); 
-  filter: brightness(1.2);  
+  transform: scale(1.1);
+  filter: brightness(1.2);
 }

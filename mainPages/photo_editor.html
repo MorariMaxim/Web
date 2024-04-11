@@ -13,7 +13,7 @@
       <button class="btn" onclick="uploadImage()">Upload</button>
     </div>
     <div id="image-container">
-      <img id="edited-image" src="resources/th.jpg" />
+      <img id="edited-image"   />
     </div>
     <div id="edit-panel">
       <h2>Edit Image</h2>
@@ -57,5 +57,24 @@
 
     <script src="../scripts/photo_editor.js"></script>
     <script src="../scripts/prepend_header.js"></script>
+
+    <script>
+      const queryString = window.location.search;
+
+      const urlParams = new URLSearchParams(queryString);
+
+      const encodedData = urlParams.get("focusedImage");
+      if (encodedData) {
+        const decodedData = decodeURIComponent(encodedData);
+
+        const dataArray = JSON.parse(decodedData);
+
+        console.log(dataArray);
+
+        let editedImage = document.getElementById("edited-image");
+
+        editedImage.src = dataArray;
+      }
+    </script>
   </body>
 </html>

@@ -22,7 +22,7 @@ let unlogged_header = `
     <p>Username</p>
     <img
       id="unlogged-image"
-      src="resources/user.png"
+      src="../resources/user.png"
       alt="unlogged user"
     />
   </div>
@@ -51,7 +51,7 @@ let logged_header = `<header class="logged-header">
 <div class="unlogged-user">
   <div href="login_page.html" class="logged-user-section">
     <p>Username</p>
-    <img id="unlogged-image" src="resources/user.png" alt="unlogged user" />
+    <img id="unlogged-image" src="../resources/user.png" alt="unlogged user" />
   </div>
 </div>
 </header>

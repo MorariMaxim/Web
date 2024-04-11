@@ -1,3 +1,5 @@
+import { redirectTo } from "./common.js";
+
 let bar = document.getElementById("filter-phact-menu");
 
 let gallery = document.getElementById("gallery-wrapper");
@@ -60,3 +62,19 @@ selectAlls.forEach((selector) => {
     });
   });
 });
+
+export const focusImage = () => {
+  let selectAlls = document.querySelectorAll(".selected-image");
+  if (selectAlls.length == 0) {
+    alert("No image selected");
+  } else {
+    console.log("source = " + selectAlls[0].src);
+    redirectTo("../mainPages/image_focus_page.html", {
+      focusedImage: selectAlls[0].src,
+    });
+  }
+};
+
+let focusButton = document.getElementById("Focus");
+
+focusButton.addEventListener("click", focusImage);

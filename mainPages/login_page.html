@@ -11,24 +11,74 @@
   <body>
     <div class="login-container">
       <form class="login-form" action="#">
-        <h1>Login</h1>
+        <h1 id="authHeader">Log In</h1>
         <div class="form-group">
           <label for="username">Username</label>
-          <input type="text" id="username" name="username" placeholder=" " />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
           <input
-            type="password"
-            id="password"
-            name="password"
+            type="text"
+            id="username-input"
+            name="username"
             placeholder=" "
           />
         </div>
-        <button type="submit">submit</button>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-container">
+            <input
+              type="password"
+              id="password-input"
+              name="password"
+              placeholder=" "
+            />
+            <div>
+              <img
+                id="password-visibility-button"
+                src="../resources/hide-password.png"
+              />
+            </div>
+          </div>
+        </div>
+        <div id="submit-container">
+          <button id="submit-button" type="submit">submit</button>
+
+          <div id="authAction-toggle">Sign Up</div>
+        </div>
       </form>
     </div>
   </body>
+  <script>
+    var hidden = true;
+    var authType = "login";
 
-  <script src="../scripts/prepend_header.js"></script>
+    let button = document.getElementById("password-visibility-button");
+    let passwordInput = document.getElementById("password-input");
+
+    button.addEventListener("click", (event) => {
+      if (hidden) {
+        button.src = "../resources/show-password.png";
+        passwordInput.setAttribute("type", "text");
+      } else {
+        button.src = "../resources/hide-password.png";
+        passwordInput.setAttribute("type", "password");
+      }
+      hidden = !hidden;
+    });
+
+    let authToggle = document.getElementById("authAction-toggle");
+    let authHeader = document.getElementById("authHeader");
+
+    authToggle.addEventListener("click", (event) => {
+      if (authType == "Log In") {
+        authHeader.innerText = "Sign Up";
+        authToggle.innerText = "Log In";
+
+        authType = "Sign Up";
+      } else {
+        authHeader.innerText = "Log In";
+        authToggle.innerText = "Sign Up";
+
+        authType = "Log In";
+      }
+    });
+  </script>
 </html>
