@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Details</title>
+    <link rel="stylesheet" href="../styles/image_focus_page.css" />
+  </head>
+  <body>
+    <main>
+      <div class="image-container">
+        <img id="focusedImage" src="../resources/th.jpg" alt="Description" />
+        <button class="nice-button2" id="edit-button">Edit</button>
+        <div class="image-details">
+          <h2>Image Details</h2>
+          <ul class="bolder-text">
+            <li>Likes: 100</li>
+            <li>Shares: 50</li>
+            <li>Comments: 20</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="comments-section">
+        <h2>Comments</h2>
+        <div class="comment">
+          <span class="user">User123:</span>
+          <p>This is an amazing photo!</p>
+        </div>
+      </div>
+    </main>
+  </body>
+  <script src="../scripts/prepend_header.js"></script>
+
+  <script>
+    const queryString = window.location.search;
+
+    const urlParams = new URLSearchParams(queryString);
+
+    const encodedData = urlParams.get("focusedImage");
+
+    console.log("ecnoded data = " + encodedData)
+
+    if (encodedData) {
+      const decodedData = decodeURIComponent(encodedData);
+
+      const dataArray = JSON.parse(decodedData);
+
+      console.log(dataArray);
+
+      let editedImage = document.getElementById("focusedImage");
+
+      editedImage.src = dataArray;
+    }
+    var editButton = document.getElementById("edit-button");
+
+    editButton.addEventListener("click", (event) => {
+      let focusedImage = document.getElementById("focusedImage");
+
+      let dataString = JSON.stringify(focusedImage.src);
+
+      let encodedData = encodeURIComponent(dataString);
+
+      window.location.href = `../mainPages/photo_editor.html?focusedImage=${encodedData}`;
+    });
+  </script>
+</html>

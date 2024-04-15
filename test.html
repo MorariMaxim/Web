@@ -3,99 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Details</title>
-    <link rel="stylesheet" href="styles.css" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f2f2f2;
-      }
-
-      .image-container {
-        max-width: 600px;
-        margin: 0 auto;
-        text-align: center;
-        background-color: #fff;
-        padding: 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-
-      .image-container img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-      }
-
-      .image-details {
-        margin-top: 20px;
-      }
-
-      .image-details h2 {
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-
-      .image-details ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-      }
-
-      .image-details li {
-        margin-bottom: 5px;
-      }
-
-      .comments-section {
-        max-width: 600px;
-        margin: 20px auto;
-        background-color: #fff;
-        padding: 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-
-      .comments-section h2 {
-        font-size: 18px;
-        margin-bottom: 10px;
-      }
-
-      .comment {
-        margin-bottom: 15px;
-      }
-
-      .comment .user {
-        font-weight: bold;
-      }
-
-      .bolder-text {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-      }
-    </style>
+    <title>Canvas Filter Example</title>
   </head>
   <body>
-    <div class="image-container">
-      <img src="resources/th.jpg" alt="Image Description" />
-      <div class="image-details">
-        <h2>Image Details</h2>
-        <ul>
-          <li>Likes: 100</li>
-          <li>Shares: 50</li>
-          <li>Comments: 20</li>
-        </ul>
-      </div>
-    </div>
+    <canvas id="myCanvas" width="400" height="300"></canvas>
 
-    <div class="comments-section">
-      <h2>Comments</h2>
-      <div class="comment">
-        <span class="user">User123:</span>
-        <p>This is an amazing photo!</p>
-      </div>
-      <!-- More comments can be added here -->
-    </div>
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const image = new Image();
+      image.onload = function () {
+        // Apply filter
+        ctx.filter = "blur(5px)";
+
+        // Draw image
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        // Reset filter
+        ctx.filter = "none"; // Reset to no filter
+
+        ctx.font = "20px Arial"; // Set font size and family
+        ctx.fillStyle = "black"; // Set text color
+        ctx.textAlign = "center"; // Text alignment
+        ctx.fillText("Hello, World!", canvas.width / 2, canvas.height / 2); // Draw text
+      };
+      image.src = "resources\\th.jpg"; // Image source
+    </script>
   </body>
 </html>
