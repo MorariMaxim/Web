@@ -2,8 +2,7 @@ import { createServer } from "http";
 import { parse } from "url";
 import { readFile, stat } from "fs/promises";
 import { join, dirname } from "path";
-import mime from "mime";
-import { getFile, getContentType } from "./functions.js";
+import { getContentType } from "./functions.js";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -78,7 +77,6 @@ const server = createServer(async (req, res) => {
     res.end("Page not found");
   }
 });
-
 
 const PORT = 3000;
 
