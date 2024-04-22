@@ -34,3 +34,4 @@ export const getContentType = (filePath) => {
       return "application/octet-stream";
   }
 };
+

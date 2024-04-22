@@ -1,85 +1,60 @@
-let unlogged_header = `
-<header class="logged-header">
-<div class="first-section">
-  <div class="hover-trigger">
-    <div class="line"></div>
-    <div class="line"></div>
-    <div class="line"></div>
-    <div class="popout-menu">
-      <a href="platform_download_page.html">Platform Download</a>
-      <a href="platform_upload_page.html">Platfrom Upload</a>
-      <a href="local_upload_page.html">Local Upload</a>          
-    </div>
-  </div>
-</div>
-<div class="mpic-logo">
-  <a href="main_page.html" class="link-unlogged-main"
-    ><p class="gradient-text">M-PIC</p></a
-  >
-</div>
-<div class="unlogged-user">
-  <div href="login_page.html" class="logged-user-section">
-    <p>Username</p>
-    <img
-      id="unlogged-image"
-      src="../resources/user.png"
-      alt="unlogged user"
-    />
-  </div>
-</div>
-</header>
-`;
+import { sessionManager } from "./authentification.js";
+import { logged_header, unlogged_header } from "../resources/headers.js";
 
-let logged_header = `<header class="logged-header">
-<div class="first-section">
-  <div class="hover-trigger">
-    <div class="line"></div>
-    <div class="line"></div>
-    <div class="line"></div>
-    <div class="popout-menu">
-      <a href="search_page.html">Platform Download</a> 
-      <a href="local_upload_page.html">Local Upload</a>
-      <a href="gallery.html">Gallery</a>
-    </div>
-  </div>
-</div>
-<div class="mpic-logo">
-  <a href="main_page.html" class="link-unlogged-main"
-    ><p class="gradient-text">M-PIC</p></a
-  >
-</div>
-<div class="unlogged-user">
-  <div href="login_page.html" class="logged-user-section">
-    <p>Username</p>
-    <img id="unlogged-image" src="../resources/user.png" alt="unlogged user" />
-  </div>
-</div>
-</header>
-`;
-let logged = true;
+let sessionId = await sessionManager.getSessionId();
 
-let header = logged ? logged_header : unlogged_header;
+console.log(sessionId);
 
-let stylesheet = logged
-  ? "../styles/logged_header.css"
-  : "../styles/unlogged_header.css";
+let authResponse = await sessionManager.sendSessionId(sessionId);
 
-let body = document.body;
+if (authResponse) {
+  let logged = false;
 
-body.innerHTML = header + body.innerHTML;
+  if (authResponse.validSessionId == "true") {
+    logged = true;
+  }
 
-let linkElement = document.createElement("link");
-linkElement.rel = "stylesheet";
-linkElement.type = "text/css";
-linkElement.href = stylesheet;
+  addHeader(logged);
 
-document.head.appendChild(linkElement);
+  //console.log(sessionId, typeof sessionId, logged);
 
-linkElement = document.createElement("link");
-linkElement.rel = "stylesheet";
-linkElement.type = "text/css";
-linkElement.href = "../styles/common.css";
+  console.log(authResponse);
 
-let firstChild = document.head.firstChild;
+  if (logged) setUserName(authResponse.username);
+}
 
-document.head.insertBefore(linkElement, firstChild);
+function addHeader(logged) {
+  let header = logged ? logged_header : unlogged_header;
+
+  let stylesheet = logged
+    ? "../styles/logged_header.css"
+    : "../styles/unlogged_header.css";
+
+  let body = document.body;
+
+  body.innerHTML = header + body.innerHTML;
+
+  addLinkToHeader(stylesheet);
+  addLinkToHeader("../styles/common.css", "start");
+}
+
+function addLinkToHeader(link, position) {
+  let linkElement = document.createElement("link");
+  linkElement.rel = "stylesheet";
+  linkElement.type = "text/css";
+  linkElement.href = link;
+
+  if (position == "start") {
+    let firstChild = document.head.firstChild;
+
+    document.head.insertBefore(linkElement, firstChild);
+  } else {
+    document.head.appendChild(linkElement);
+  }
+}
+
+function setUserName(username) {
+  let element = document.getElementById("username-block");
+
+  element.innerHTML = username;
+}

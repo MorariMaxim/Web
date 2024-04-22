@@ -12,3 +12,18 @@ export const redirectTo = (targetUrl, data) => {
 
   window.location.href = targetUrl;
 };
+
+
+export function waitForCondition(condition, interval) {
+  return new Promise((resolve) => {
+    const checkCondition = () => {
+      if (condition()) {
+        resolve();  
+      } else {
+        setTimeout(checkCondition, interval);  
+      }
+    };
+
+    checkCondition();  
+  });
+}
