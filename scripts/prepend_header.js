@@ -2,8 +2,7 @@ import { sessionManager } from "./authentification.js";
 import { logged_header, unlogged_header } from "../resources/headers.js";
 
 let sessionId = await sessionManager.getSessionId();
-
-console.log(sessionId);
+ 
 
 let authResponse = await sessionManager.sendSessionId(sessionId);
 
