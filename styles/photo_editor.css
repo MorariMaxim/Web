@@ -58,7 +58,6 @@ body * {
   align-items: center;
 }
 
- 
 #actions {
   display: flex;
   column-gap: 10px;
@@ -83,16 +82,16 @@ body {
   position: relative;
 }
 .image-container {
-  position: relative; 
-  display: flex; 
-  flex-direction: column;  
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .handler {
   position: absolute;
   width: 20px;
   height: 20px;
   cursor: pointer;
-  z-index: 1000;
+  z-index: 100;
 }
 #handler1 {
   top: 50px;
@@ -102,12 +101,13 @@ body {
   top: 150px;
   left: 150px;
 }
+
 #rectangle {
   position: absolute;
   border: 2px dotted rgb(156, 156, 169);
   pointer-events: none;
   cursor: pointer;
-  z-index: 1000;
+  z-index: 100;
 }
 #textHover {
   cursor: pointer;
@@ -119,11 +119,11 @@ form {
   flex-wrap: wrap;
 }
 label {
-  display: block; 
+  display: block;
   text-align: center;
   line-height: 50px;
 }
-input{
+input {
   height: 40px;
 }
 
@@ -134,4 +134,19 @@ input[type="submit"] {
 
 #upload-section {
   padding: 10px;
+}
+
+@media (max-width: 768px) {
+  #handler1 {
+    top: 10px;
+    left: 10px;
+  }
+  #handler2 {
+    top: 50px;
+    left: 50px;
+  }
+
+  .edit-row {
+    flex-direction: column;
+  }
 }

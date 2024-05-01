@@ -4,6 +4,11 @@ import {
   AnnotationMemento,
 } from "../scripts/PhotoEditor.js";
 
+const mobileWidthProportion = 0.8;
+const desktopWidthProportion = 0.6;
+let widthProportion;
+setWidthPropotion();
+
 let showText = true;
 
 let imageContainer = document.getElementById("imageContainer");
@@ -17,7 +22,10 @@ if (urlImgSrc) imageSrc = urlImgSrc;
 let mainCanvas = document.getElementById("mainCanvas");
 let ctx = mainCanvas.getContext("2d");
 
-const photoEditor = new PhotoEditor(mainCanvas);
+const photoEditor = new PhotoEditor(
+  mainCanvas,
+  document.body.clientWidth * widthProportion
+);
 
 const mainImage = new Image();
 mainImage.src = imageSrc;
@@ -36,34 +44,60 @@ mainImage.onload = async function () {
   updateRectangle();
 
   document.getElementById("saveButton").onclick = saveCropArea;
+
+  window.addEventListener("resize", function () {
+    setWidthPropotion();
+
+    photoEditor.setCanvasSize(document.body.clientWidth * widthProportion);
+    photoEditor.draw();
+  });
 };
 
 function makeDraggable(element) {
   let differenceX = 0,
     differenceY = 0,
-    lastMouseX = 0,
-    lastMouseY = 0;
+    lastX = 0,
+    lastY = 0;
 
   let handler1 = document.getElementById("handler1");
 
   let handlerWidth = handler1.offsetWidth;
   let handlerHeight = handler1.offsetHeight;
 
-  element.onmousedown = dragMouseDown;
-  function dragMouseDown(e) {
+  element.addEventListener("mousedown", dragStart);
+  element.addEventListener("touchstart", dragStart);
+
+  function dragStart(e) {
     e.preventDefault();
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = elementDrag;
+    if (e.type === "mousedown") {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      document.addEventListener("mousemove", drag);
+      document.addEventListener("mouseup", dragEnd);
+    } else if (e.type === "touchstart") {
+      let touch = e.touches[0];
+      lastX = touch.clientX;
+      lastY = touch.clientY;
+      document.addEventListener("touchmove", drag);
+      document.addEventListener("touchend", dragEnd);
+    }
   }
 
-  function elementDrag(e) {
+  function drag(e) {
     e.preventDefault();
-    differenceX = e.clientX - lastMouseX;
-    differenceY = e.clientY - lastMouseY;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
+    let currentX, currentY;
+    if (e.type === "mousemove") {
+      currentX = e.clientX;
+      currentY = e.clientY;
+    } else if (e.type === "touchmove") {
+      let touch = e.touches[0];
+      currentX = touch.clientX;
+      currentY = touch.clientY;
+    }
+    differenceX = currentX - lastX;
+    differenceY = currentY - lastY;
+    lastX = currentX;
+    lastY = currentY;
     let newTop = element.offsetTop + differenceY;
     let newLeft = element.offsetLeft + differenceX;
 
@@ -80,9 +114,11 @@ function makeDraggable(element) {
     updateRectangle();
   }
 
-  function closeDragElement() {
-    document.onmouseup = null;
-    document.onmousemove = null;
+  function dragEnd() {
+    document.removeEventListener("mousemove", drag);
+    document.removeEventListener("mouseup", dragEnd);
+    document.removeEventListener("touchmove", drag);
+    document.removeEventListener("touchend", dragEnd);
   }
 }
 
@@ -105,12 +141,11 @@ function updateRectangle() {
   rectangle.style.width = width + "px";
   rectangle.style.height = height + "px";
 
+  let canvas = document.getElementById("textHover");
+  let ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (showText) {
-    let canvas = document.getElementById("textHover");
-    let ctx = canvas.getContext("2d");  
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     canvas.height = cropHeight * 1.3;
-
 
     let { text, fontType, textColor } = getTextInputValues();
 
@@ -243,6 +278,8 @@ function addFormListeners() {
 
     updateRectangle();
   });
+  document.getElementById("showText").click();
+
 }
 
 function getTextInputValues() {
@@ -287,4 +324,11 @@ function getImageFromUrl() {
   }
 
   return null;
+}
+
+function setWidthPropotion() {
+  widthProportion =
+    document.body.clientWidth > 1000
+      ? desktopWidthProportion
+      : mobileWidthProportion;
 }

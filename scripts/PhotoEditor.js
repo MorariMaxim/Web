@@ -6,8 +6,9 @@ class PhotoEditor {
   filters = [];
   width = 300;
 
-  constructor(canvas) {
+  constructor(canvas,width) {
     this.canvas = canvas;
+    this.width = width;
   }
 
   apply(memento) {
@@ -16,10 +17,17 @@ class PhotoEditor {
     memento.apply();
   }
 
+  setCanvasSize(width) {
+    this.width = width;
+    this.canvas.width = width;
+    this.canvas.height =
+      (this.displayedImage.height / this.displayedImage.width) * this.width;
+  }
+
   setImage(image) {
     this.displayedImage = image;
-    this.canvas.width = this.width;
-    this.canvas.height = (image.height / image.width) * this.width;
+
+    this.setCanvasSize(this.width);
   }
 
   undo() {
