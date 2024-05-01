@@ -13,7 +13,7 @@ body {
 body * {
   box-sizing: border-box;
   position: relative;
-} 
+}
 #edited-image {
   max-width: 100%;
   max-height: 400px;
@@ -42,25 +42,23 @@ body * {
   row-gap: 10px;
 }
 
-#filters {
+.edit-row {
   flex-flow: row;
   display: flex;
   column-gap: 50px;
+
+  justify-content: center;
 }
 
 .filer-item {
   display: flex;
 
   column-gap: 5px;
+
+  align-items: center;
 }
 
-@media screen and (max-width: 730px) {
-  #filters {
-    flex-flow: column;
-    display: flex;
-    row-gap: 5px;
-  }
-}
+ 
 #actions {
   display: flex;
   column-gap: 10px;
@@ -79,4 +77,61 @@ body * {
 
 h2 {
   margin-top: 0;
+}
+
+body {
+  position: relative;
+}
+.image-container {
+  position: relative; 
+  display: flex; 
+  flex-direction: column;  
+}
+.handler {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1000;
+}
+#handler1 {
+  top: 50px;
+  left: 50px;
+}
+#handler2 {
+  top: 150px;
+  left: 150px;
+}
+#rectangle {
+  position: absolute;
+  border: 2px dotted rgb(156, 156, 169);
+  pointer-events: none;
+  cursor: pointer;
+  z-index: 1000;
+}
+#textHover {
+  cursor: pointer;
+}
+
+form {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+}
+label {
+  display: block; 
+  text-align: center;
+  line-height: 50px;
+}
+input{
+  height: 40px;
+}
+
+input[type="submit"] {
+  display: block;
+  margin-top: 10px;
+}
+
+#upload-section {
+  padding: 10px;
 }

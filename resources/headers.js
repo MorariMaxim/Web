@@ -1,5 +1,5 @@
 const unlogged_header = `
-<header class="unlogged-header">
+<header class="unlogged-header header">
   <div class="filler"></div>
   <div class="mpic-logo">
     <a href="main_page.html" class="link-unlogged-main"
@@ -16,7 +16,7 @@ const unlogged_header = `
 
 `;
 
-const logged_header = `<header class="logged-header">
+const logged_header = `<header class="logged-header header">
 <div class="first-section">
   <div class="hover-trigger">
     <div class="line"></div>

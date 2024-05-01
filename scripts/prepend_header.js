@@ -1,37 +1,49 @@
 import { sessionManager } from "./authentification.js";
 import { logged_header, unlogged_header } from "../resources/headers.js";
 
+// await sessionManager.removeSessionId();
+
+let logged = false;
+
 let sessionId = await sessionManager.getSessionId();
- 
+let nickname = localStorage.getItem("nickName");
 
-let authResponse = await sessionManager.sendSessionId(sessionId);
-
-if (authResponse) {
-  let logged = false;
-
-  if (authResponse.validSessionId == "true") {
-    logged = true;
-  }
-
-  addHeader(logged);
-
-  //console.log(sessionId, typeof sessionId, logged);
-
+console.log(nickname, sessionId);
+if (nickname == null || sessionId == null) {
+  let authResponse = await sessionManager.sendSessionId(sessionId);
   console.log(authResponse);
 
-  if (logged) setUserName(authResponse.username);
+  if (authResponse && authResponse.validSessionId == "true") {
+    logged = true;
+
+    localStorage.setItem("nickName", authResponse.username);
+    localStorage.setItem("nickName", authResponse.username);
+
+    console.log(localStorage.getItem("nickName"));
+  }
+} else {
+  logged = true;
 }
 
+addHeader(logged);
+
+setUserName();
+
 function addHeader(logged) {
+  console.log(logged);
+  console.log("addheader");
   let header = logged ? logged_header : unlogged_header;
 
   let stylesheet = logged
     ? "../styles/logged_header.css"
     : "../styles/unlogged_header.css";
 
-  let body = document.body;
-
-  body.innerHTML = header + body.innerHTML;
+  const tempContainer = document.createElement("div");
+  tempContainer.innerHTML = header;
+  document.body.insertBefore(
+    tempContainer.querySelector(".header"),
+    document.body.firstChild
+  );
 
   addLinkToHeader(stylesheet);
   addLinkToHeader("../styles/common.css", "start");
@@ -55,5 +67,5 @@ function addLinkToHeader(link, position) {
 function setUserName(username) {
   let element = document.getElementById("username-block");
 
-  element.innerHTML = username;
+  element.innerHTML = localStorage.getItem("nickName");
 }

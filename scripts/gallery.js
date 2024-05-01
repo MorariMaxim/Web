@@ -8,6 +8,8 @@ let button = document.getElementById("toggleButton");
 button.addEventListener("click", function () {
   let computedStyle = window.getComputedStyle(bar);
 
+  console.log(computedStyle.display);
+  
   if (computedStyle.display === "none") {
     console.log("first");
     bar.style.display = "block";
@@ -46,6 +48,7 @@ images.forEach((image) => {
     image.classList.toggle("selected-image");
   });
 });
+
 
 let selectAlls = document.querySelectorAll(".SelectAll");
 

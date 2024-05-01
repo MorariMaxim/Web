@@ -8,15 +8,15 @@
       }
       .image-container {
         position: relative;
-        width: 1000px;
         overflow: hidden;
+        display: inline-block;
       }
       .handler {
         position: absolute;
         width: 20px;
         height: 20px;
         cursor: pointer;
-        z-index: 100;
+        z-index: 1000;
       }
       #handler1 {
         top: 50px;
@@ -26,11 +26,36 @@
         top: 150px;
         left: 150px;
       }
-      .rectangle {
+      #rectangle {
         position: absolute;
         border: 2px dotted rgb(156, 156, 169);
         pointer-events: none;
-        z-index: 100;
+        cursor: pointer; 
+        z-index: 1000;
+      }
+      #textHover {
+        cursor: pointer;
+      }
+
+      form {
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      form > div {
+        flex: 1;
+        margin-right: 10px;
+      }
+      form > div:last-child {
+        margin-right: 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input[type="submit"] {
+        display: block;
+        margin-top: 10px;
       }
     </style>
   </head>
@@ -44,200 +69,71 @@
       /> -->
       <div id="handler1" class="handler"></div>
       <div id="handler2" class="handler"></div>
-      <div id="rectangle" class="rectangle"></div>
+      <div id="rectangle" class="rectangle">
+        <canvas id="textHover"></canvas>
+      </div>
       <canvas id="mainCanvas"> </canvas>
     </div>
 
     <button id="saveButton">Save Image</button>
 
-    <script>
-      let imageContainer = document.getElementById("imageContainer");
-      let parentWidth = handler1.parentElement.offsetWidth;
-      let parentHeight = handler1.parentElement.offsetHeight;
+    <form id="filterForm">
+      <h2>Filter Form</h2>
+      <div>
+        <label for="filterName">Filter Name:</label>
+        <input
+          type="text"
+          id="filterName"
+          name="filterName"
+          required
+          value="sepia"
+        />
+      </div>
+      <div>
+        <label for="intensity">Intensity:</label>
+        <input
+          type="number"
+          id="intensity"
+          name="intensity"
+          required
+          value="100"
+        />
+      </div>
+      <input type="submit" value="Apply Filter" />
+    </form>
 
-      console.log(parentHeight, parentWidth);
+    <form id="textForm">
+      <h2>Text Form</h2>
+      <div>
+        <label for="text">Text:</label>
+        <input type="text" id="text" name="text" required value="ABCgyj" />
+      </div>
 
-      let imageSrc = "../resources/th.jpg";
-      let mainCanvas = document.getElementById("mainCanvas");
-      let ctx = mainCanvas.getContext("2d");
+      <div>
+        <label for="fontType">Font Type:</label>
+        <input
+          type="text"
+          id="fontType"
+          name="fontType"
+          required
+          value="cursive"
+        />
+      </div>
+      <div>
+        <label for="textColor">Text Color:</label>
+        <input
+          type="color"
+          id="textColor"
+          name="textColor"
+          required
+          value="red"
+        />
+      </div>
 
-      const mainImage = new Image();
-      mainImage.src = imageSrc;
+      <input type="submit" value="Add Text" />
+    </form>
 
-      let cropX, cropY, cropWidth, cropHeight;
-      let realImageWidth, realImageHeight;
-
-      mainImage.onload = function () {
-        realImageWidth = mainImage.width;
-        realImageHeight = mainImage.height;
-
-        mainCanvas.width = 1000;
-        mainCanvas.height = (mainImage.height / mainImage.width) * 1000;
-
-        setParentSize(mainCanvas.height, mainCanvas.width);
-
-        ctx.font = "30px Arial"; // Font size and type
-        ctx.fillStyle = "red"; // Fill color
-        ctx.fillText("Hello, World!", 50,50); // (text, x, y)
-        ctx.filter = "sepia(100%)";
-
-        const textMetrics = ctx.measureText("Hello, World!");
-        let image = getPartOfCanvas(
-          0,
-          0,
-          textMetrics.width,
-          50,
-          mainCanvas
-        );
-        console.log(50, 50, textMetrics.width, 30, mainCanvas);
- 
-
-        downloadImage(image)
-
-        ctx.drawImage(mainImage, 0, 0, mainCanvas.width, mainCanvas.height);
-
-        let tempImage = new Image();
-        tempImage.src = image;
-
-        tempImage.onload = () => { 
-          let saveFilter = ctx.filter;
-          ctx.filter = "none";
-          ctx.drawImage(tempImage, 0, 0, tempImage.width, tempImage.height);
-
-          ctx.filter = saveFilter;
-        };
-
-        parentHeight = imageContainer.height;
-        parentWidth = imageContainer.width;
-
-        makeDraggable(document.getElementById("handler1"));
-        makeDraggable(document.getElementById("handler2"));
-
-        updateRectangle();
-
-        document.getElementById("saveButton").onclick = saveCropArea;
-      };
-
-      function makeDraggable(element) {
-        let differenceX = 0,
-          differenceY = 0,
-          lastMouseX = 0,
-          lastMouseY = 0;
-
-        let handler1 = document.getElementById("handler1");
-
-        let handlerWidth = handler1.offsetWidth;
-        let handlerHeight = handler1.offsetHeight;
-
-        element.onmousedown = dragMouseDown;
-        function dragMouseDown(e) {
-          e.preventDefault();
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          document.onmouseup = closeDragElement;
-          document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-          e.preventDefault();
-          differenceX = e.clientX - lastMouseX;
-          differenceY = e.clientY - lastMouseY;
-          lastMouseX = e.clientX;
-          lastMouseY = e.clientY;
-          let newTop = element.offsetTop + differenceY;
-          let newLeft = element.offsetLeft + differenceX;
-
-          if (
-            newTop >= 0 &&
-            newLeft >= 0 &&
-            newTop <= parentHeight - handlerHeight &&
-            newLeft <= parentWidth - handlerWidth
-          ) {
-            element.style.top = newTop + "px";
-            element.style.left = newLeft + "px";
-          }
-
-          updateRectangle();
-        }
-
-        function closeDragElement() {
-          document.onmouseup = null;
-          document.onmousemove = null;
-        }
-      }
-
-      function updateRectangle() {
-        let top = Math.min(handler1.offsetTop, handler2.offsetTop);
-        let left = Math.min(handler1.offsetLeft, handler2.offsetLeft);
-        let width =
-          Math.abs(handler1.offsetLeft - handler2.offsetLeft) +
-          handler1.offsetWidth;
-        let height =
-          Math.abs(handler1.offsetTop - handler2.offsetTop) +
-          handler1.offsetHeight;
-
-        cropX = left;
-        cropY = top;
-        cropWidth = width;
-        cropHeight = height;
-
-        let rectangle = document.getElementById("rectangle");
-        rectangle.style.top = top + "px";
-        rectangle.style.left = left + "px";
-        rectangle.style.width = width + "px";
-        rectangle.style.height = height + "px";
-      }
-
-      function saveCropArea() {
-        let mainCanvas = document.getElementById("mainCanvas");
-
-        let image = getPartOfCanvas(
-          cropX,
-          cropY,
-          cropWidth,
-          cropHeight,
-          mainCanvas
-        );
-
-        downloadImage(image);
-      }
-
-      function getPartOfCanvas(x, y, width, height, sourceCanvas) {
-        let canvas = document.createElement("canvas");
-        let ctx = canvas.getContext("2d");
-
-        canvas.width = width;
-        canvas.height = height;
-
-        ctx.drawImage(
-          sourceCanvas,
-          x,
-          y,
-          width,
-          height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-
-        return canvas.toDataURL("image/jpeg", 0.7);
-      }
-
-      function downloadImage(image) {
-        let downloadLink = document.createElement("a");
-        downloadLink.href = image;
-        downloadLink.download = "cropped_image.jpg";
-        downloadLink.click();
-      }
-
-      function setParentSize(height, width) {
-        parentHeight = height;
-        parentWidth = width;
-
-        imageContainer.width = width;
-        imageContainer.height = height;
-      }
-    </script>
+    <button id="undoButton">undo</button>
+    <script type="module" src="../scripts/crop-save.js"></script>
   </body>
 </html>

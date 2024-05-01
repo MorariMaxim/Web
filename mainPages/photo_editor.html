@@ -10,71 +10,106 @@
   <body>
     <div id="upload-section">
       <input type="file" id="upload-input" />
-      <button class="btn" onclick="uploadImage()">Upload</button>
+      <button class="btn" id="uploadButton">Upload</button>
     </div>
-    <div id="image-container">
-      <img id="edited-image"   />
+    <div class="image-container" id="imageContainer">
+      <!-- <img
+        id="mainImage"
+        src="../resources/th.jpg"
+        alt="Image"
+        style="width: 100%; height: 100%"
+      /> -->
+      <div id="handler1" class="handler"></div>
+      <div id="handler2" class="handler"></div>
+      <div id="rectangle" class="rectangle">
+        <canvas id="textHover"></canvas>
+      </div>
+      <canvas id="mainCanvas"> </canvas>
     </div>
     <div id="edit-panel">
       <h2>Edit Image</h2>
       <form id="filter-form">
-        <div id="filters">
+        <div id="filters" class="edit-row">
           <div class="filer-item">
-            <label for="filter-select">Select Filter:</label>
-            <select id="filter-select">
+            <label for="filterName">Select Filter:</label>
+            <input type="text" id="filterName" list="predefinedFilters" />
+
+            <datalist id="predefinedFilters">
               <option value="sepia">sepia</option>
               <option value="invert">invert</option>
               <option value="brightness">brightness</option>
               <option value="contrast">contrast</option>
               <option value="grayscale">grayscale</option>
               <option value="opacity">Invert</option>
-              <!-- Add more filter options as needed -->
-            </select>
+            </datalist>
           </div>
           <div class="filer-item">
-            <label for="filter-slider">Filter Strength:</label>
-            <input
-              type="range"
-              id="filter-slider"
-              min="0"
-              max="100"
-              value="50"
-            />
+            <label for="intensity">Filter Strength:</label>
+            <input type="range" id="intensity" min="0" max="100" value="50" />
           </div>
+          <button class="btn" type="button" id="applyFilterBtn">
+            Apply Filter
+          </button>
         </div>
         <br />
-        <div id="actions">
-          <button class="btn" type="button" onclick="applyFilter()">
-            Apply
-          </button>
-          <button class="btn" type="button" onclick="undoFilter()">Undo</button>
-          <button class="btn" type="button" onclick="resetFilter()">
-            Reset
-          </button>
+
+        <div id="textParameters" class="edit-row">
+          <div class="filer-item">
+            <label for="showText">Show Text:</label>
+            <input type="checkbox" class="niceCheckBox" id="showText" name="showText" />
+          </div>
+          <div class="filer-item">
+            <label for="textInput">Text:</label>
+            <input
+              type="text"
+              id="textInput"
+              name="textInput"
+              required
+              value="ABCgyj"
+            />
+          </div>
+
+          <div class="filer-item">
+            <label for="fontType">Font Type:</label>
+            <input
+              type="text"
+              id="fontType"
+              name="fontType"
+              required
+              value="cursive"
+              list="predefinedFontTypes"
+            />
+            <datalist id="predefinedFontTypes">
+              <option value="Arial">Arial</option>
+              <option value="cursive">cursive</option>
+            </datalist>
+          </div>
+          <div class="filer-item">
+            <label for="textColor">Color:</label>
+            <input
+              type="color"
+              id="textColor"
+              name="textColor"
+              required
+              value="#ff0000"
+            />
+          </div>
+
+          <button class="btn" type="button" id="addTextBtn">Add Text</button>
+        </div>
+        <br />
+
+        <div class="edit-row">
+          <button id="saveButton" class="btn">Save Image</button>
+
+          <button id="undoButton" class="btn">undo</button>
         </div>
       </form>
     </div>
+    <!-- <script type="module" src="../scripts/prepend_header.js"></script> -->
 
-    <script src="../scripts/photo_editor.js"></script>
-    <script type="module" src="../scripts/prepend_header.js"></script>
-
-    <script>
-      const queryString = window.location.search;
-
-      const urlParams = new URLSearchParams(queryString);
-
-      const encodedData = urlParams.get("focusedImage");
-      if (encodedData) {
-        const decodedData = decodeURIComponent(encodedData);
-
-        const dataArray = JSON.parse(decodedData);
-
-        console.log(dataArray);
-
-        let editedImage = document.getElementById("edited-image");
-
-        editedImage.src = dataArray;
-      }
-    </script>
+    <script type="module" src="../scripts/crop-save.js"></script>
   </body>
+
+  <script type="module" src="../scripts/prepend_header.js"></script>
 </html>
