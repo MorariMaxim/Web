@@ -1,0 +1,73 @@
+Ce mi-a placut:
++ am vazut pagina de selectare multicriteriala (banui ca keywords si minimum rating sau locatia sunt ok)
++ pagina de upload
+
+
+Ce ar mai fi trebuit sa fie (sau ce nu mi-a placut):
+- documentul scholarly este sumar, fara adnotari semantice, nici macar stilul de la scholarly nu s-a pastrat... Nu vad nici un fel de motivatie asupra felului in care au fost construite paginile...
+- pagina de selectare multicriteriala nu este responsive (nu se mai vede nici o imagine) si are erori (la validadare HTML)
+- pagina image focus are eroare html
+- pagina de upload doar se scaleaza, nu este chiar in spiritul "responsive"
+
+Poate partea cu editorul ar merge pe pagina in care se vizualiza o aingura imagine... nu trebuie sa fac upload la imagine ca sa o editez ci trebuie sa o iau din sistem (poate de la serviciile de acolo)
+
+-----------
+Concluzii: Este OK-sih. Paginile ar mai trebui validate, verificat acel responsivness, si atentie ca va mai lipsesc 
+niste facilitati (de exemplu de conectare multiplia al diverse servicii sau de upload a pozelor catre acele servicii... 
+nu vad nici pagina care permite construirea unui proiect ceva cu imaginile prelucrate). Documentatia este slaba tare.
+7
+
+
+
+
+
+
+
+
+
+
+La ce ma uit la evaluarea acestei componente:
+
+=================================================================================================
+Ce pagini ma astept sa gasesc intr-o astfel de aplicatie (M=PIC):
+
+- pagina de autentificare / create cont / recovery pass
+- pagina de conectare la alte servicii web ce ptermit stocarea de imagini
+- o pagina cu imaginile preluate (in care sa se vada comentarii sau ratings)
+- posibilitatea de cautare multicriteriala
+- pagina de upload
+- posibilitatea de editare in vreun fel (definire masti, aplicare filtre, etc.)
+- posibilitatea de a forma colaje sau de a folosi in alt mod imaginile editate mai sus
+=================================================================================================
+
+Ma astept, de asemenea, sa gasesc un document scholarly care sa descrie fiecare dintre 
+paginile de mai sus si felul de interactiune (cum se trece de la una la cealalta). Ce
+motivatie a existat in alegerile facute (font, culoare, flow-ul aplicatiei, etc.).
+Scholarly trebuie sa aiba adnotari semantice (a se citi felul in care trebuie construit
+aici: https://w3c.github.io/scholarly-html/ - link dat in descrierea proiectelor)
+
+
+Documentele sa fie neaparat asezate in foldere, pe categorii:
+IMG / CSS / JS / etc. 
+
+Paginile trebuie sa fie valide HTML (vor fi validate cu https://validator.w3.org)
+
+CSSul trebuie sa fie valide cu http://csslint.net/
+
+Paginile trebuie sa fie responsive.... le voi verifica prin micsorarea ferestrei dar
+si prin selectarea telefon / PC (ma astept ca diversele elemente grafice sa nu 
+se suprapuna in rezolutii mai mici, sa nu apara scrolluri orizontale (decat daca au
+fost gandite din design - fapt specificat in scholarly), textul sa fie citibil si pe
+telefon si pagina sa nu fie doar scalata de catre acesta intr-o incercare a acestuia
+a afisa ceva cat de cat corect.
+
+Siteul trebuie sa fie navigabil (dau click pe index.html si de acolo pot naviga apasand
+diverse linkuri sau butoane catre celelalte pagini).
+
+Sa nu fie erori de legatura intre diverse documente (de exemplu nu ma apuc sa vad eu pe
+unde este CSSul care nu se incarca in HTMLul vostru).
+
+Orice proiect trebuie sa aiba minim 5 pagini care respecta aceste conditii pentru
+a lua nota 5. Daca ai 10, vei lua 10.
+
+
