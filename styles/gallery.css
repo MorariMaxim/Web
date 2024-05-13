@@ -142,3 +142,33 @@ input[type="date"] {
     display: none;
   }
 }
+
+
+/*  */
+
+.sectionSelector {
+  margin-bottom: 20px;
+  text-align: center;
+}
+#sectionSelect {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+#sectionSelect:hover,
+#sectionSelect:focus {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.25);
+}
+.section {
+  display: none;
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}

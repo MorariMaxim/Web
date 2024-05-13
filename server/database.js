@@ -145,7 +145,7 @@ class DataBase {
   }
 }
 
-const dataBase = new DataBase("mydatabase.db");
+const dataBase = new DataBase("server/mydatabase.db");
 
 export { dataBase };
 

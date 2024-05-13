@@ -12,6 +12,7 @@
   </head>
   <body>
     <main>
+      <!-- for mobile -->
       <div id="display-filter-bar">
         <div class="first-section">
           <p>Filters</p>
@@ -44,16 +45,23 @@
                 </label>
               </li>
               <li>
-                <input class="checkbox-input" id="upload" type="checkbox" />
-                <label class="checkbox" for="upload">Upload</label>
+                <input class="checkbox-input" id="save" type="checkbox" />
+                <label class="checkbox" for="save">save</label>
               </li>
             </ul>
           </div>
         </div>
       </div>
+
       <div id="filter-phact-menu">
+        <select id="sectionSelect">
+          <option value="New Imgur">New Imgur</option>
+          <option value="Local Imgur">Local Imgur</option>
+        </select>
+        <!-- select all, focus, upload -->
         <div class="phact-menu" id="phact-menu-desktop">
-          <ul>
+          <!-- imgurNew-PhachMenu -->
+          <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="New Imgur">
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -70,8 +78,34 @@
               </label>
             </li>
             <li>
-              <input class="checkbox-input" id="upload" type="checkbox" />
-              <label class="checkbox" for="upload">Upload</label>
+              <input class="checkbox-input" id="save" type="checkbox" />
+              <label class="checkbox" for="save">Save</label>
+            </li>
+            <li>
+              <input class="checkbox-input" id="Focus" type="checkbox" />
+              <label class="checkbox" for="Focus">Focus</label>
+            </li>
+          </ul>
+          <!-- imgurLocal-PhachMenu -->
+          <ul
+            id="imgurLocal-PhachtMenu"
+            class="PhactMenu"
+            phactType="Local Imgur"
+          >
+            <li>
+              <input
+                class="checkbox-input SelectAll"
+                id="SelectAll3"
+                type="checkbox"
+              />
+              <label class="checkbox" for="SelectAll3">
+                <span>
+                  <svg width="12px" height="10px">
+                    <use xlink:href="#check"></use>
+                  </svg>
+                </span>
+                <span>Select All</span>
+              </label>
             </li>
 
             <li>
@@ -81,38 +115,53 @@
           </ul>
         </div>
         <div id="filter-bar">
+          <!-- filter bar -->
           <div class="form-group">
-            <label for="keywords">Keywords</label>
+            <label for="imgurTags">Tags</label>
             <input
               type="text"
-              id="keyword"
-              name="keyword"
-              placeholder="  keywords ... "
+              id="imgurTags"
+              name="imgurTags"
+              placeholder="cats, funny "
+              value="cats,funny,"
             />
           </div>
 
           <div class="form-group">
-            <label for="rating">Minimum Rating:</label>
-            <input type="number" id="rating" name="rating" min="1" max="5" />
-          </div>
-          <div class="form-group">
-            <label for="platform">Platform</label>
-            <select id="platform" name="platform">
-              <option value="">Select platform...</option>
-              <option value="imgur">Imgur</option>
-              <option value="instagram">Instagram</option>
+            <label for="imgurSection">Section</label>
+            <select id="imgurSection" name="imgurSection">
+              <option value="none">none</option>
+              <option value="hot">Hot</option>
+              <option value="top ">Top</option>
+              <option value="user">User</option>
             </select>
           </div>
+
           <div class="form-group">
-            <label for="location">Location:</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              placeholder="Enter location..."
-            />
+            <label for="imgurSort">sort</label>
+            <select id="imgurSort" name="imgurSort">
+              <option value="none">none</option>
+              <option value="viral">viral</option>
+              <option value="top">Top</option>
+              <option value="time">time</option>
+              <option value="user">user</option>
+            </select>
           </div>
-          <button class="nice-button" role="button">Filter</button>
+
+          <div class="form-group">
+            <label for="imgurWindow">window</label>
+            <select id="imgurWindow" name="imgurWindow">
+              <option value="none">none</option>
+              <option value="day">day</option>
+              <option value="week">week</option>
+              <option value="month">month</option>
+              <option value="year">year</option>
+              <option value="all">all</option>
+            </select>
+          </div>
+          <button id="filterButton" class="nice-button" role="button">
+            Fetch
+          </button>
         </div>
       </div>
 

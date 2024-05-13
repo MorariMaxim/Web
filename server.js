@@ -2,9 +2,10 @@ import { createServer } from "http";
 import { parse } from "url";
 import { readFile, stat } from "fs/promises";
 import { join, dirname } from "path";
-import { getContentType } from "./scripts/functions.js";
-import { dataBase } from "./scripts/database.js";
-import { generateSessionId } from "./scripts/authentificationServerSide.js";
+import { getContentType } from "./server/functions.js";
+import { dataBase } from "./server/database.js";
+import { generateSessionId } from "./server/authentificationServerSide.js";
+import { fetchImgurImages } from "./server/imgur.js";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -14,6 +15,7 @@ const serveFile = async (res, filePath) => {
   const fileExists = async (filePath) => {
     try {
       await stat(filePath);
+      ``;
       return true;
     } catch (err) {
       console.log(err);
@@ -54,7 +56,6 @@ const server = createServer(async (req, res) => {
   const parsedUrl = parse(req.url, true);
   let pathname = parsedUrl.pathname;
   const pathComponents = pathname.split("/").filter(Boolean);
-  //https://ccc.eu/ro/femei/pantofi/pantofi-casual?page=2
 
   //console.log(pathComponents);
   const staticFolders = [
@@ -67,7 +68,52 @@ const server = createServer(async (req, res) => {
   if (pathComponents.length == 0) {
     const filePath = join(__dirname, "mainPages", "main_page.html");
     serveFile(res, filePath);
+  } else if (pathComponents[0] == "searchImages") {
+    searchImagesRoute(req, res);
   } else if (pathComponents[0] == "loginRoute") {
+    loginRoute(req, res);
+  } else if (pathComponents.length == 1) {
+    const filePath = join(__dirname, "mainPages", pathComponents[0]);
+    serveFile(res, filePath);
+  } else if (
+    pathComponents.length > 1 &&
+    staticFolders.includes(pathComponents.at(0))
+  ) {
+    serveFile(res, join(__dirname, pathname));
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Page not found");
+  }
+});
+
+const PORT = 3000;
+
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+});
+
+function getBodyFromRequest(req) {
+  return new Promise((resolve, reject) => {
+    let data = "";
+
+    req.on("data", (chunk) => {
+      data += chunk.toString();
+    });
+
+    req.on("end", () => {
+      try {
+        const body = JSON.parse(data);
+        resolve(body);
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        reject(error);
+      }
+    });
+  });
+}
+
+async function loginRoute(req, res) {
+  {
     const response = {
       username: "invalid",
       validSessionId: "false",
@@ -104,7 +150,7 @@ const server = createServer(async (req, res) => {
 
           response.username = body.getUsername;
           response.validCredentials = "true";
-          response.sessionId = newSessionId;  
+          response.sessionId = newSessionId;
 
           dataBase.setSessionId(userId, newSessionId);
         } else {
@@ -133,45 +179,30 @@ const server = createServer(async (req, res) => {
     }
 
     res.end(JSON.stringify(response));
-  } else if (pathComponents.length == 1) {
-    const filePath = join(__dirname, "mainPages", pathComponents[0]);
-    serveFile(res, filePath);
-  } else if (
-    pathComponents.length > 1 &&
-    staticFolders.includes(pathComponents.at(0))
-  ) {
-    serveFile(res, join(__dirname, pathname));
-  } else {
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Page not found");
   }
-});
+}
 
-const PORT = 3000;
+async function searchImagesRoute(req, res) {
+  const type = req.headers.type;
+  let options = {};
+  if (type == "imgurDownload") {
+    if (req.headers.section) {
+      options.section = req.headers.section;
+    }
+    if (req.headers.window) {
+      options.window = req.headers.window;
+    }
+    if (req.headers.sort) {
+      options.sort = req.headers.sort;
+    }
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
-});
+    let images = await fetchImgurImages(req.headers.tags.split(/\s+/), options);
+    
+    res.end(JSON.stringify(images));
+    // res.end(null);
 
+    return;
+  }
 
-
-
-function getBodyFromRequest(req) {
-  return new Promise((resolve, reject) => {
-    let data = "";
-
-    req.on("data", (chunk) => {
-      data += chunk.toString();
-    });
-
-    req.on("end", () => {
-      try {
-        const body = JSON.parse(data);
-        resolve(body);
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        reject(error);
-      }
-    });
-  });
+  res.writeHead(200, { "Content-Type": "application/json" });
 }
