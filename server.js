@@ -1,11 +1,15 @@
 import { createServer } from "http";
 import { parse } from "url";
 import { readFile, stat } from "fs/promises";
-import { join, dirname } from "path";
+import { join, dirname, basename, extname } from "path";
 import { getContentType } from "./server/functions.js";
 import { dataBase } from "./server/database.js";
 import { generateSessionId } from "./server/authentificationServerSide.js";
 import { fetchImgurImages } from "./server/imgur.js";
+import axios from "axios";
+import fs from "fs";
+import { config } from "process";
+// import { Database } from "sqlite3";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -68,8 +72,13 @@ const server = createServer(async (req, res) => {
   if (pathComponents.length == 0) {
     const filePath = join(__dirname, "mainPages", "main_page.html");
     serveFile(res, filePath);
+  } else if (pathComponents[0] == "getImage") {
+    getImage(req, res);
   } else if (pathComponents[0] == "searchImages") {
     searchImagesRoute(req, res);
+  } else if (pathComponents[0] == "saveImages") {
+    console.log("hei");
+    saveImages(req, res);
   } else if (pathComponents[0] == "loginRoute") {
     loginRoute(req, res);
   } else if (pathComponents.length == 1) {
@@ -113,73 +122,71 @@ function getBodyFromRequest(req) {
 }
 
 async function loginRoute(req, res) {
-  {
-    const response = {
-      username: "invalid",
-      validSessionId: "false",
-    };
+  const response = {
+    username: "invalid",
+    validSessionId: "false",
+  };
 
-    if (req.headers.sessionid) {
-      const sessionId = req.headers.sessionid;
-      console.log("sessionId:", sessionId);
+  if (req.headers.sessionid) {
+    const sessionId = req.headers.sessionid;
+    console.log("sessionId:", sessionId);
 
-      const userId = await dataBase.getUserIdBySessionId(sessionId);
+    const userId = await dataBase.getUserIdBySessionId(sessionId);
 
-      res.setHeader("validSessionId", "true");
+    res.setHeader("validSessionId", "true");
+
+    if (userId) {
+      const userDate = await dataBase.getUserById(userId);
+
+      response.username = userDate.getUsername;
+      response.validSessionId = "true";
+    }
+  } else if (req.headers.authentificationtype) {
+    const loginAttempt = req.headers.authentificationtype == "login";
+
+    console.log(loginAttempt);
+
+    let body = await getBodyFromRequest(req);
+
+    console.log(body);
+
+    if (loginAttempt) {
+      let userId = await dataBase.getUserIdByUsername(body.username);
 
       if (userId) {
-        const userDate = await dataBase.getUserById(userId);
+        const newSessionId = await generateSessionId();
 
-        response.username = userDate.getUsername;
-        response.validSessionId = "true";
-      }
-    } else if (req.headers.authentificationtype) {
-      const loginAttempt = req.headers.authentificationtype == "login";
+        response.username = body.getUsername;
+        response.validCredentials = "true";
+        response.sessionId = newSessionId;
 
-      console.log(loginAttempt);
-
-      let body = await getBodyFromRequest(req);
-
-      console.log(body);
-
-      if (loginAttempt) {
-        let userId = await dataBase.getUserIdByUsername(body.username);
-
-        if (userId) {
-          const newSessionId = await generateSessionId();
-
-          response.username = body.getUsername;
-          response.validCredentials = "true";
-          response.sessionId = newSessionId;
-
-          dataBase.setSessionId(userId, newSessionId);
-        } else {
-          console.log("invalid username " + body.username);
-        }
+        dataBase.setSessionId(userId, newSessionId);
       } else {
-        let userData = await dataBase.getUserByname(body.username);
+        console.log("invalid username " + body.username);
+      }
+    } else {
+      let userData = await dataBase.getUserByname(body.username);
 
-        if (userData) {
-          response.signupresult = "username taken";
-        } else {
-          dataBase.addUser(body.username, body.password);
-          let user = await dataBase.getUserByname(body.username);
+      if (userData) {
+        response.signupresult = "username taken";
+      } else {
+        dataBase.addUser(body.username, body.password);
+        let user = await dataBase.getUserByname(body.username);
 
-          response.signupresult = "success";
-          const newSessionId = await generateSessionId();
-          console.log(newSessionId);
+        response.signupresult = "success";
+        const newSessionId = await generateSessionId();
+        console.log(newSessionId);
 
-          await dataBase.setSessionId(user.getId, newSessionId);
+        await dataBase.setSessionId(user.getId, newSessionId);
 
-          console.log(await dataBase.getSessionIdByUserId(user.getId));
+        console.log(await dataBase.getSessionIdByUserId(user.getId));
 
-          response.sessionId = newSessionId;
-        }
+        response.sessionId = newSessionId;
       }
     }
-
-    res.end(JSON.stringify(response));
   }
+
+  res.end(JSON.stringify(response));
 }
 
 async function searchImagesRoute(req, res) {
@@ -197,7 +204,7 @@ async function searchImagesRoute(req, res) {
     }
 
     let images = await fetchImgurImages(req.headers.tags.split(/\s+/), options);
-    
+
     res.end(JSON.stringify(images));
     // res.end(null);
 
@@ -205,4 +212,100 @@ async function searchImagesRoute(req, res) {
   }
 
   res.writeHead(200, { "Content-Type": "application/json" });
+}
+
+async function saveImages(req, res) {
+  let body = await getBodyFromRequest(req);
+  let sessionId = req.headers.sessionid;
+
+  if (!(await checkSessionId(sessionId))) return;
+
+  let response = {};
+
+  console.log("Trying to save images for user with sessionId " + sessionId);
+
+  for (let image of body) {
+    let imageUrl = image.src;
+    let postId = image.postId;
+
+    console.log("trying " + image);
+
+    console.log(imageUrl, postId);
+
+    let result = await dataBase.saveImgurImageToUser(
+      sessionId,
+      postId,
+      imageUrl
+    );
+
+    if (result) {
+      let downloaded = await downloadImgurImage(
+        imageUrl,
+        "server/repository/" + result + extname(imageUrl)
+      );
+      if (downloaded) response[imageUrl] = result;
+      else response[imageUrl] = "fail";
+    } else response[imageUrl] = "fail";
+  }
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(response));
+}
+
+async function downloadImgurImage(imageUrl, imagePath) {
+  const imageResponse = await axios.get(imageUrl, {
+    responseType: "arraybuffer",
+  });
+
+  const imageData = imageResponse.data;
+
+  return new Promise((resolve, reject) => {
+    fs.writeFile(imagePath, imageData, (err) => {
+      if (err) {
+        console.error("Error writing image data to file:", err);
+        resolve(false);
+      } else {
+        console.log("Image data written to file:", imagePath);
+        resolve(true);
+      }
+    });
+  });
+}
+
+async function checkSessionId(sessionId, res) {
+  let userId = dataBase.getUserIdBySessionId(sessionId);
+
+  if (userId == null) {
+    res.writeHead(403, { "Content-Type": "text/plain" });
+    res.end("Invalid sessionId");
+    return false;
+  }
+
+  return true;
+}
+
+(async () => {
+  //const imageResponse = await axios.get("http://localhost:3000/getImage?id=1");
+
+  console.log(await dataBase.getImages());
+})();
+
+async function getImage(req, res) {
+  const parsedUrl = parse(req.url, true).query;
+
+  let id = parsedUrl.id;
+
+  const filePath = join("server/repository/", `${id}.jpg`);
+
+  console.log(filePath);
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Image not found");
+    } else {
+      res.writeHead(200, { "Content-Type": "image/jpeg" });
+      res.end(data);
+    }
+  });
 }

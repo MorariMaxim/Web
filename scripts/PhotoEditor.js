@@ -36,8 +36,7 @@ class PhotoEditor {
     if (last) last.undo();
   }
 
-  draw() {
-    console.log("photo editor draw");
+  draw() { 
     let ctx = this.canvas.getContext("2d");
 
     let savedFilter = ctx.filter;
@@ -47,9 +46,7 @@ class PhotoEditor {
     if (ctx.filter == savedFilter) {
       this.filters.pop();
     }
-
-    console.log(ctx.filter);
-    console.log('this.filters.join(" ") :>> ', this.filters.join(" "));
+ 
     ctx.drawImage(
       this.displayedImage,
       0,

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { clientId } from "./imgur-credentials.js";
 
-export async function fetchImgurImages(tags, options = {}, ) {
+export async function fetchImgurImages(tags, options = {}) {
   //tags is like ["cats", "funny"]
   try {
     const response = await axios.get(
@@ -22,7 +22,6 @@ export async function fetchImgurImages(tags, options = {}, ) {
       throw new Error("Invalid response from Imgur API");
     }
 
-    // Extract the images from the response data, which are albums
     const images = getImgLinksFromImgurAlbums(response.data.data);
 
     return images;
@@ -39,11 +38,21 @@ export function getImgLinksFromImgurAlbums(data) {
       const albumImages = item.images || [];
       albumImages.forEach((image) => {
         if (image.type === "image/jpeg" || image.type === "image/png") {
-          imgLinks.push(image.link);
+          imgLinks.push({
+            src: image.link,
+            postId: item.id,
+            foreign: true,
+            type: "New Imgur",
+          });
         }
       });
     } else if (item.type === "image/jpeg" || item.type === "image/png") {
-      imgLinks.push(item.link);
+      imgLinks.push({
+        src: item.link,
+        postId: item.id,
+        foreign: true,
+        type: "New Imgur",
+      });
     }
   });
 

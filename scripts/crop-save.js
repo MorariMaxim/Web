@@ -50,6 +50,23 @@ mainImage.onload = async function () {
 
     photoEditor.setCanvasSize(document.body.clientWidth * widthProportion);
     photoEditor.draw();
+
+    /* document.getElementById("handler1").style.top = `${
+      imageContainer.offsetWidth * 0.1
+    }px`;
+
+    document.getElementById("handler1").style.left = `${
+      imageContainer.offsetHeight * 0.1
+    }px`;
+
+    document.getElementById("handler2").style.top = `${
+      imageContainer.offsetWidth * 0.5
+    }px`;
+
+    document.getElementById("handler2").style.left = `${
+      imageContainer.offsetHeight * 0.5
+    }px`; */
+    updateRectangle();
   });
 };
 
@@ -166,6 +183,8 @@ function saveCropArea(e) {
 
   let image = getPartOfCanvas(cropX, cropY, cropWidth, cropHeight, mainCanvas);
 
+  console.log(image);
+
   downloadImage(image);
 }
 
@@ -279,7 +298,6 @@ function addFormListeners() {
     updateRectangle();
   });
   document.getElementById("showText").click();
-
 }
 
 function getTextInputValues() {

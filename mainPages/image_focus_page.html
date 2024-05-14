@@ -35,18 +35,21 @@
   <script>
     const queryString = window.location.search;
 
+    console.log(decodeURIComponent(queryString));
+    console.log(decodeURIComponent(window.location));
+
     const urlParams = new URLSearchParams(queryString);
 
     const encodedData = urlParams.get("focusedImage");
 
-    console.log("ecnoded data = " + encodedData)
+    const foreign = urlParams.get("foreign") == "true";
+
+    console.log(foreign);
 
     if (encodedData) {
       const decodedData = decodeURIComponent(encodedData);
 
       const dataArray = JSON.parse(decodedData);
-
-      console.log(dataArray);
 
       let editedImage = document.getElementById("focusedImage");
 
@@ -55,13 +58,23 @@
     var editButton = document.getElementById("edit-button");
 
     editButton.addEventListener("click", (event) => {
-      let focusedImage = document.getElementById("focusedImage");
+      if (foreign) {
+        result = window.confirm(
+          "Because of foreign origin policy, you won't be able to save the edited image. Proceeding will download the image and associate it with your account. Continue?"
+        );
 
-      let dataString = JSON.stringify(focusedImage.src);
+        if (result) {
+          // to do
+        }
+      } else {
+        let focusedImage = document.getElementById("focusedImage");
 
-      let encodedData = encodeURIComponent(dataString);
+        let dataString = JSON.stringify(focusedImage.src);
 
-      window.location.href = `../mainPages/photo_editor.html?focusedImage=${encodedData}`;
+        let encodedData = encodeURIComponent(dataString);
+
+        window.location.href = `../mainPages/photo_editor.html?focusedImage=${encodedData}`;
+      }
     });
   </script>
 </html>

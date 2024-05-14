@@ -82,8 +82,16 @@ export const focusImage = () => {
     alert("No image selected");
   } else {
     console.log("source = " + selectAlls[0].src);
+
+    let foreign = selectAlls[0].getAttribute("foreign") != null;
+
+    console.log(selectAlls[0].getAttribute("foreign"));
+
     redirectTo("../mainPages/image_focus_page.html", {
       focusedImage: selectAlls[0].src,
+      postId: selectAlls[0].getAttribute("postId"),
+      foreign: selectAlls[0].getAttribute("foreign"),
+      type: selectAlls[0].getAttribute("type"),
     });
   }
 };
@@ -186,8 +194,10 @@ function fillGallery(images) {
     galleryItem.classList.add("gallery-item");
 
     const imgElement = document.createElement("img");
-    imgElement.src = image;
-    imgElement.alt = "Couldn't load image";
+
+    for (const field in image) {
+      imgElement.setAttribute(field, image[field]);
+    }
 
     galleryItem.appendChild(imgElement);
 
@@ -195,4 +205,76 @@ function fillGallery(images) {
   });
 
   makeImagesSelectable();
+}
+
+let saveButtons = document.querySelectorAll(".save_phact");
+
+console.log(saveButtons);
+
+saveButtons.forEach((button) => {
+  button.addEventListener("click", saveImagesRequest);
+});
+
+async function saveImagesRequest() {
+  let htmlImages = getSelectedImages();
+
+  if (htmlImages.length == 0) {
+    alert("No images selected");
+    return;
+  }
+
+  let type = htmlImages[0].getAttribute("type");
+
+  let images;
+
+  if (type == "New Imgur") {
+    images = getImgurDataArray(htmlImages);
+  } else {
+    console.log("something went wrong");
+    return;
+  }
+
+  console.log("save request");
+  let response = await fetch("/saveImages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      sessionId: localStorage.getItem("sessionId"),
+    },
+    body: JSON.stringify(images),
+  });
+
+  console.log("save response");
+
+  response = await response.json();
+
+  let failed = [];
+
+  for (let image in response) {
+    const imgElement = document.querySelector(`img[src="${image}"]`);
+
+    if (imgElement && response[image] != "fail") {
+      imgElement.src = `getImage?id=${response[image]}`;
+      imgElement.setAttribute("foreign", "false");
+      imgElement.setAttribute("type", "Local Imgur");
+    } else {
+      failed.push(image);
+    }
+  }
+
+  if (failed.length != 0) alert("Failed to load:\n" + failed.join("\n"));
+}
+
+function getImgurDataArray(htmlImages) {
+  return [...htmlImages].map((image) => {
+    return {
+      postId: image.getAttribute("postId"),
+      src: image.src,
+      type: image.getAttribute("type"),
+    };
+  });
+}
+
+function getSelectedImages() {
+  return document.querySelectorAll(".selected-image");
 }
