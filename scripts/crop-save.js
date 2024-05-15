@@ -179,13 +179,19 @@ function updateRectangle() {
 
 function saveCropArea(e) {
   e.preventDefault();
+
+  let result = window.confirm(
+    "This action will save a new image and associate it with your account, do you agree?"
+  );
+  if (!result) return;
+
   let mainCanvas = document.getElementById("mainCanvas");
 
   let image = getPartOfCanvas(cropX, cropY, cropWidth, cropHeight, mainCanvas);
 
   console.log(image);
 
-  downloadImage(image);
+  //downloadImage(image);
 }
 
 function getPartOfCanvas(x, y, width, height, sourceCanvas) {

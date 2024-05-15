@@ -45,7 +45,7 @@ function addHeader(logged) {
     document.body.firstChild
   );
 
-  addLinkToHeader(stylesheet);
+  addLinkToHeader(stylesheet, "start");
   addLinkToHeader("../styles/common.css", "start");
 }
 

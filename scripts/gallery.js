@@ -155,9 +155,22 @@ async function downloadFromImgurRequest() {
     options.window = imgurWindow.value;
   }
 
+  let title = imgurTitle.value.trim();
+
+  let tags = keepSpacesAndLetters(imgurKeywords.value);
+
+  if (tags != "" && title != "")
+    alert(
+      "Can't search using title and tags at the same time, it defaults to tags"
+    );
+  if (tags != "") {
+    options.q = tags;
+  } else if (title != "") {
+    options.q = `title: ${title}`;
+  }
+
   let headers = {
     "Content-Type": "application/json",
-    tags: keepSpacesAndLetters(imgurTags.value),
     type: "imgurDownload",
     ...options,
   };
@@ -177,7 +190,35 @@ async function downloadFromImgurRequest() {
   }
 }
 
-async function searchLocalImgurRequest() {}
+async function searchLocalImgurRequest() {
+  let headers = {
+    "Content-Type": "application/json",
+    type: "imgurLocal",
+    sessionId: localStorage.getItem("sessionId"),
+  };
+
+  const response = await fetch("/searchImages", {
+    method: "get",
+    headers,
+  });
+  try {
+    const responseBody = await response.json();
+
+    console.log(responseBody);
+    if (responseBody.length == 0) alert("no images found");
+    else {
+      fillGallery(
+        responseBody.map((id) => {
+          return {
+            src: `getImage?id=${id.image_id}`,
+          };
+        })
+      );
+    }
+  } catch (e) {
+    alert("Seemingly there was a backend error, the server returned no images");
+  }
+}
 
 function keepSpacesAndLetters(text) {
   text = text.replace(/,/g, " ");
@@ -223,16 +264,11 @@ async function saveImagesRequest() {
     return;
   }
 
-  let type = htmlImages[0].getAttribute("type");
+  htmlImages = [...htmlImages].filter(
+    (element) => element.getAttribute("type") == "New Imgur"
+  );
 
-  let images;
-
-  if (type == "New Imgur") {
-    images = getImgurDataArray(htmlImages);
-  } else {
-    console.log("something went wrong");
-    return;
-  }
+  let images = getImgurDataArray(htmlImages);
 
   console.log("save request");
   let response = await fetch("/saveImages", {
@@ -240,6 +276,7 @@ async function saveImagesRequest() {
     headers: {
       "Content-Type": "application/json",
       sessionId: localStorage.getItem("sessionId"),
+      imagetype: "New Imgur",
     },
     body: JSON.stringify(images),
   });

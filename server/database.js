@@ -1,10 +1,17 @@
 import sqlite3 from "sqlite3";
+import { extname } from "path";
 
 class DataBase {
   constructor(path) {
     this.db = new sqlite3.Database(path);
-
+    let dropTables = false;
     this.db.serialize(() => {
+      if (dropTables) {
+        this.db.run("DROP TABLE IF EXISTS images");
+        this.db.run("DROP TABLE IF EXISTS imgurImages");
+        this.db.run("DROP TABLE IF EXISTS userImages");
+      }
+
       this.db.run(`CREATE TABLE IF NOT EXISTS users (
                       id INTEGER PRIMARY KEY AUTOINCREMENT,
                       username TEXT UNIQUE,
@@ -17,16 +24,11 @@ class DataBase {
                       user_id INTEGER,
                       login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                   );`);
-      // this.db.run("DROP TABLE IF EXISTS images");
       this.db.run(`CREATE TABLE IF NOT EXISTS images (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     type TEXT,
-                    title TEXT,
-                    description TEXT
-
+                    ext TEXT
                   );`);
-      // this.db.run("DROP TABLE IF EXISTS imgurImages");
       this.db.run(`CREATE TABLE IF NOT EXISTS imgurImages (        
                   postId TEXT,
                   url TEXT,                  
@@ -34,6 +36,13 @@ class DataBase {
                   FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
                   UNIQUE(postId,url)
               );`);
+      this.db.run(`CREATE TABLE IF NOT EXISTS userImages (        
+                user_id INTEGER,                       
+                image_id INTEGER,
+                FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE(user_id,image_id)
+            );`);
     });
   }
 
@@ -177,13 +186,13 @@ class DataBase {
     });
   }
 
-  async insertImage(userId, type) {
+  async insertImage(type, ext) {
     const insertImageSql = `
-      INSERT INTO images (user_id, type)
+      INSERT INTO images (type, ext)
       VALUES (?, ?)
     `;
     let result = await new Promise((resolve, reject) => {
-      this.db.run(insertImageSql, [userId, type], function (err) {
+      this.db.run(insertImageSql, [type, ext], function (err) {
         if (err) {
           console.error(
             "Error inserting image into images table:",
@@ -219,29 +228,71 @@ class DataBase {
     });
   }
 
+  async associateImageToUser(imageId, userId) {
+    return await new Promise((resolve, reject) => {
+      this.db.run(
+        "INSERT INTO userImages (user_id, image_id) VALUES (?, ?);",
+        [userId, imageId],
+        function (err) {
+          if (err && err.code != "SQLITE_CONSTRAINT") {
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        }
+      );
+    });
+  }
+
   async saveImgurImageToUser(sessionId, postId, url) {
     return await new Promise(async (resolve) => {
       this.db.serialize(async () => {
+        let response = {};
+        response.success = false;
+        response.id = -1;
+        response.download = true;
+
         this.db.run("BEGIN TRANSACTION;");
+
+        let imageId = await this.getImgurImageByUrl(url);
+
+        console.log(imageId);
 
         let userId = await this.getUserIdBySessionId(sessionId);
 
-        let id = await this.insertImage(userId, "imgur");
-        if (!id) {
-          this.db.run("ROLLBACK;");
-          resolve(null);
-          return;
+        if (imageId == null) {
+          imageId = await this.insertImage("imgur", extname(url));
+          console.log(`saving image with ext = ${extname(url)}`);
+          if (!imageId) {
+            this.db.run("ROLLBACK;");
+            resolve(response);
+            return;
+          }
+
+          let result = await this.insertImgurImage(imageId, postId, url);
+          if (!result) {
+            this.db.run("ROLLBACK;");
+            resolve(response);
+            return;
+          }
+        } else {
+          response.download = false;
         }
 
-        let result = await this.insertImgurImage(id, postId, url);
+        let result = await this.associateImageToUser(imageId, userId);
+
+        console.log("associating:" + result);
+
         if (!result) {
           this.db.run("ROLLBACK;");
-          resolve(null);
+          resolve(response);
           return;
         }
 
         this.db.run("COMMIT;", () => {
-          resolve(id);
+          response.id = imageId;
+          response.success = true;
+          resolve(response);
         });
       });
     });
@@ -268,8 +319,10 @@ class DataBase {
   }
 
   async getUserImages(userId) {
+
+    console.log(userId);
     const selectImageSql = `
-      SELECT * FROM images WHERE user_id = ?
+      SELECT image_id FROM userImages WHERE user_id = ?
     `;
 
     return new Promise((resolve, reject) => {
@@ -283,6 +336,20 @@ class DataBase {
         } else {
           resolve(row);
         }
+      });
+    });
+  }
+
+  async getImgurImageByUrl(url) {
+    const selectImageSql = `
+      SELECT image_id FROM imgurImages WHERE url = ?
+    `;
+
+    return new Promise((resolve, reject) => {
+      this.db.get(selectImageSql, [url], (err, row) => {
+        if (row) {
+          resolve(row.image_id);
+        } else resolve(null);
       });
     });
   }

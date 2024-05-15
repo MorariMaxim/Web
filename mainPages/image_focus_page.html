@@ -10,23 +10,24 @@
     <main>
       <div class="image-container">
         <img id="focusedImage" src="../resources/th.jpg" alt="Description" />
-        <button class="nice-button2" id="edit-button">Edit</button>
+        <button class="nice-button2 focused-image-buttons" id="edit-button">
+          Edit
+        </button>
+
+        <button
+          class="nice-button2 focused-image-buttons"
+          id="fetchCommentsButton"
+        >
+          Get Comments
+        </button>
         <div class="image-details">
           <h2>Image Details</h2>
-          <ul class="bolder-text">
-            <li>Likes: 100</li>
-            <li>Shares: 50</li>
-            <li>Comments: 20</li>
-          </ul>
+          <ul class="bolder-text" id="imageDetailList"></ul>
         </div>
       </div>
 
-      <div class="comments-section">
+      <div class="comments-section" id="commentsSection">
         <h2>Comments</h2>
-        <div class="comment">
-          <span class="user">User123:</span>
-          <p>This is an amazing photo!</p>
-        </div>
       </div>
     </main>
   </body>
@@ -40,14 +41,18 @@
 
     const urlParams = new URLSearchParams(queryString);
 
-    const encodedData = urlParams.get("focusedImage");
+    function getQueryParameter(name) {
+      return JSON.parse(decodeURIComponent(urlParams.get(name)));
+    }
+
+    const focusedImageEnc = urlParams.get("focusedImage");
 
     const foreign = urlParams.get("foreign") == "true";
 
     console.log(foreign);
 
-    if (encodedData) {
-      const decodedData = decodeURIComponent(encodedData);
+    if (focusedImageEnc) {
+      const decodedData = decodeURIComponent(focusedImageEnc);
 
       const dataArray = JSON.parse(decodedData);
 
@@ -75,6 +80,104 @@
 
         window.location.href = `../mainPages/photo_editor.html?focusedImage=${encodedData}`;
       }
+    });
+
+    var commentsButton = document.getElementById("fetchCommentsButton");
+
+    commentsButton.addEventListener("click", async (event) => {
+      const pattern = /id=(\d+)/;
+
+      const match = pattern.exec(focusedImageEnc);
+
+      let id;
+      let headers = {};
+
+      if (match) {
+        id = match[1];
+        headers.imageId = id;
+        console.log(id);
+      } else {
+        let postId = getQueryParameter("postId");
+
+        if (postId) headers.postid = postId;
+        else {
+          alert("Can't perform action for current object");
+          return;
+        }
+      }
+
+      const response = await fetch("/getComments", {
+        method: "get",
+        headers,
+      });
+
+      let postData = await response.json();
+
+      function addImageDetails(details) {
+        imageDetailList.innerHTML = "";
+        let highlighted = [];
+
+        if (details.title) highlighted.push({ title: details.title });
+        if (details.description)
+          highlighted.push({ description: details.description });
+        if (details.views) highlighted.push({ views: details.views });
+        if (details.ups) highlighted.push({ ups: details.ups });
+        if (details.downs) highlighted.push({ downs: details.downs });
+
+        function addDetail(key, value) {
+          const li = document.createElement("li");
+          li.innerHTML = `<span style="font-weight: bold; color: red;">${key.toUpperCase()}:</span> ${value}`;
+          imageDetailList.appendChild(li);
+        }
+
+        for (const detail_ in highlighted) {
+          for (const key in highlighted[detail_]) {
+            const fieldName = key;
+            const fieldValue = highlighted[detail_][key];
+            addDetail(fieldName, fieldValue);
+          }
+        }
+
+        let tags = [];
+
+        details.tags?.forEach((tag) => {
+          tags.push(tag.name);
+        });
+        if (tags.length) addDetail("tags", tags.join(", "));
+      }
+
+      function addComment(commentInfo, parent) {
+        // Create the comment div element
+        const commentDiv = document.createElement("div");
+        commentDiv.classList.add("comment");
+
+        // Create the user span element
+        const userSpan = document.createElement("span");
+        userSpan.classList.add("user");
+        userSpan.textContent = commentInfo.author;
+
+        // Create the comment paragraph element
+        const commentP = document.createElement("p");
+        commentP.textContent = commentInfo.comment;
+
+        // Append user span and comment paragraph to the comment div
+        commentDiv.appendChild(userSpan);
+        commentDiv.appendChild(commentP);
+
+        // Append the comment div to the specified parent element
+        parent.appendChild(commentDiv);
+
+        commentInfo.children.forEach((child) => {
+          addComment(child, commentDiv);
+        });
+      }
+      commentsSection.innerHTML = "<h2>Comments</h2>";
+
+      [...postData.comments].forEach((comment) => {
+        addComment(comment, document.getElementById("commentsSection"));
+      });
+
+      addImageDetails(postData.details);
     });
   </script>
 </html>

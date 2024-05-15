@@ -5,9 +5,14 @@ import { join, dirname, basename, extname } from "path";
 import { getContentType } from "./server/functions.js";
 import { dataBase } from "./server/database.js";
 import { generateSessionId } from "./server/authentificationServerSide.js";
-import { fetchImgurImages } from "./server/imgur.js";
+import {
+  fetchImgurImages,
+  fetchCommentsForPost,
+  fetchPostInfo,
+} from "./server/imgur.js";
 import axios from "axios";
 import fs from "fs";
+import { clientId } from "./server/imgur-credentials.js";
 import { config } from "process";
 // import { Database } from "sqlite3";
 
@@ -69,15 +74,20 @@ const server = createServer(async (req, res) => {
     "scripts",
     "styles",
   ];
+
+  console.log(pathComponents);
   if (pathComponents.length == 0) {
     const filePath = join(__dirname, "mainPages", "main_page.html");
     serveFile(res, filePath);
+  } else if (pathComponents[0] == "getComments") {
+    getComments(req, res);
   } else if (pathComponents[0] == "getImage") {
     getImage(req, res);
   } else if (pathComponents[0] == "searchImages") {
     searchImagesRoute(req, res);
   } else if (pathComponents[0] == "saveImages") {
-    console.log("hei");
+    saveImages(req, res);
+  } else if (pathComponents[0] == "saveImageData") {
     saveImages(req, res);
   } else if (pathComponents[0] == "loginRoute") {
     loginRoute(req, res);
@@ -202,21 +212,41 @@ async function searchImagesRoute(req, res) {
     if (req.headers.sort) {
       options.sort = req.headers.sort;
     }
+    if (req.headers.q) {
+      options.q = req.headers.q;
+    }
 
-    let images = await fetchImgurImages(req.headers.tags.split(/\s+/), options);
+    console.log(`received options: ${JSON.stringify(options)}`);
+    let images = await fetchImgurImages(options);
 
+    res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(images));
     // res.end(null);
+  } else if (type == "imgurLocal") {
+    let userId = await dataBase.getUserIdBySessionId(req.headers.sessionid);
 
-    return;
+    if (!userId) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("invalid sessionID");
+      return;
+    }
+
+    let images = await dataBase.getUserImages(userId);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(images));
+  } else {
+    res.writeHead(404);
   }
-
-  res.writeHead(200, { "Content-Type": "application/json" });
 }
 
 async function saveImages(req, res) {
   let body = await getBodyFromRequest(req);
   let sessionId = req.headers.sessionid;
+
+  let imageType = req.headers.imagetype;
+
+  console.log(imageType);
 
   if (!(await checkSessionId(sessionId))) return;
 
@@ -238,17 +268,20 @@ async function saveImages(req, res) {
       imageUrl
     );
 
-    if (result) {
-      let downloaded = await downloadImgurImage(
-        imageUrl,
-        "server/repository/" + result + extname(imageUrl)
-      );
-      if (downloaded) response[imageUrl] = result;
-      else response[imageUrl] = "fail";
+    if (result.success) {
+      if (result.download) {
+        let downloaded = await downloadImgurImage(
+          imageUrl,
+          "server/repository/" + result.id + extname(imageUrl)
+        );
+        if (downloaded) response[imageUrl] = result.id;
+        else response[imageUrl] = "fail";
+      } else response[imageUrl] = result.id;
     } else response[imageUrl] = "fail";
   }
 
   res.writeHead(200, { "Content-Type": "application/json" });
+  console.log("sending " + JSON.stringify(response));
   res.end(JSON.stringify(response));
 }
 
@@ -291,11 +324,20 @@ async function checkSessionId(sessionId, res) {
 })();
 
 async function getImage(req, res) {
+  console.log("getImage");
   const parsedUrl = parse(req.url, true).query;
 
   let id = parsedUrl.id;
 
-  const filePath = join("server/repository/", `${id}.jpg`);
+  let image = await dataBase.getImageById(id);
+
+  if (!image) {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Image not found");
+    return;
+  }
+
+  const filePath = join("server/repository/", `${id}${image.ext}`);
 
   console.log(filePath);
 
@@ -308,4 +350,32 @@ async function getImage(req, res) {
       res.end(data);
     }
   });
+}
+
+async function getComments(req, res) {
+  console.log("GetComments request");
+  let imageId = req.headers.imageid;
+  let postId = req.headers.postid;
+
+  if (imageId) {
+    let image = await dataBase.getImageById(imageId);
+
+    if (image.type == "imgur") {
+      let imgurImage = await dataBase.getImgurImage(imageId);
+
+      postId = imgurImage.postId;
+    }
+  }
+
+  if (postId) {
+    const comments = await fetchCommentsForPost(postId, clientId);
+
+    const details = await fetchPostInfo(postId, clientId);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ comments, details }));
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Can't treat it");
+  }
 }

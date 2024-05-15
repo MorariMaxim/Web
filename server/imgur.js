@@ -1,16 +1,20 @@
 import axios from "axios";
 import { clientId } from "./imgur-credentials.js";
 
-export async function fetchImgurImages(tags, options = {}) {
-  //tags is like ["cats", "funny"]
+export async function fetchImgurImages(options = {}) {
+  console.log({
+    page: 0, //to get more you'd set page: current_page+1
+    ...options,
+    // q: "title: dog AND cat",
+  });
   try {
     const response = await axios.get(
       "https://api.imgur.com/3/gallery/search/",
       {
         params: {
-          q: tags.join(","),
           page: 0, //to get more you'd set page: current_page+1
           ...options,
+          // q: "title: dog AND cat",
         },
         headers: {
           Authorization: `Client-ID ${clientId}`,
@@ -57,4 +61,42 @@ export function getImgLinksFromImgurAlbums(data) {
   });
 
   return imgLinks;
+}
+
+export async function fetchCommentsForPost(postId, clientId) {
+  try {
+    const response = await axios.get(
+      `https://api.imgur.com/3/gallery/${postId}/comments`,
+      {
+        headers: {
+          Authorization: `Client-ID ${clientId}`,
+        },
+      }
+    );
+
+    const commentData = response.data.data;
+
+    return commentData;
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function fetchPostInfo(postId, clientId) {
+  try {
+    const response = await axios.get(
+      `https://api.imgur.com/3/gallery/${postId}`,
+      {
+        headers: {
+          Authorization: `Client-ID ${clientId}`,
+        },
+      }
+    );
+
+    const commentData = response.data.data;
+
+    return commentData;
+  } catch (error) {
+    return [];
+  }
 }
