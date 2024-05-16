@@ -177,7 +177,7 @@ function updateRectangle() {
   }
 }
 
-function saveCropArea(e) {
+async function saveCropArea(e) {
   e.preventDefault();
 
   let result = window.confirm(
@@ -188,9 +188,20 @@ function saveCropArea(e) {
   let mainCanvas = document.getElementById("mainCanvas");
 
   let image = getPartOfCanvas(cropX, cropY, cropWidth, cropHeight, mainCanvas);
-
-  console.log(image);
-
+  
+  const response = await fetch("/saveImages", {
+    method: "post",
+    body: JSON.stringify({
+      data: base64FromCanvasImage(image),
+      ext: ".jpg",
+      type: "edit",
+    }),
+    headers: {
+      imagetype: "base64",
+      sessionid: localStorage.getItem("sessionId"),
+    },
+  });
+  console.log(await response.json());
   //downloadImage(image);
 }
 
@@ -355,4 +366,8 @@ function setWidthPropotion() {
     document.body.clientWidth > 1000
       ? desktopWidthProportion
       : mobileWidthProportion;
+}
+
+function base64FromCanvasImage(image) {
+  return image.replace(/^data:image\/\w+;base64,/, "");
 }

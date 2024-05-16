@@ -210,7 +210,7 @@ async function searchLocalImgurRequest() {
       fillGallery(
         responseBody.map((id) => {
           return {
-            src: `getImage?id=${id.image_id}`,
+            src: `http://192.168.0.198:3000/getImage?id=${id.image_id}`,
           };
         })
       );
@@ -291,7 +291,7 @@ async function saveImagesRequest() {
     const imgElement = document.querySelector(`img[src="${image}"]`);
 
     if (imgElement && response[image] != "fail") {
-      imgElement.src = `getImage?id=${response[image]}`;
+      imgElement.src = `http://192.168.0.198:3000/getImage?id=${response[image]}`;
       imgElement.setAttribute("foreign", "false");
       imgElement.setAttribute("type", "Local Imgur");
     } else {

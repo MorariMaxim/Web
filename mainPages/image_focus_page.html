@@ -47,9 +47,10 @@
 
     const focusedImageEnc = urlParams.get("focusedImage");
 
-    const foreign = urlParams.get("foreign") == "true";
+    const foreign = getQueryParameter("foreign") == "true";
 
     console.log(foreign);
+    console.log("true" );
 
     if (focusedImageEnc) {
       const decodedData = decodeURIComponent(focusedImageEnc);

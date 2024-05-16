@@ -1,5 +1,7 @@
 import sqlite3 from "sqlite3";
 import { extname } from "path";
+import fs from "fs";
+import path from "path";
 
 class DataBase {
   constructor(path) {
@@ -10,6 +12,9 @@ class DataBase {
         this.db.run("DROP TABLE IF EXISTS images");
         this.db.run("DROP TABLE IF EXISTS imgurImages");
         this.db.run("DROP TABLE IF EXISTS userImages");
+
+        deleteFilesInDirectory("server/repository/images");
+        deleteFilesInDirectory("server/repository/image_meta");
       }
 
       this.db.run(`CREATE TABLE IF NOT EXISTS users (
@@ -319,7 +324,6 @@ class DataBase {
   }
 
   async getUserImages(userId) {
-
     console.log(userId);
     const selectImageSql = `
       SELECT image_id FROM userImages WHERE user_id = ?
@@ -397,4 +401,25 @@ export class User {
   get getPassword() {
     return this.password;
   }
+}
+
+function deleteFilesInDirectory(directory) {
+  fs.readdir(directory, (err, files) => {
+    if (err) {
+      console.error("Error reading directory:", err);
+      return;
+    }
+
+    files.forEach((file) => {
+      const filePath = path.join(directory, file);
+
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error("Error deleting file:", err);
+          return;
+        }
+        console.log(`Deleted file: ${filePath}`);
+      });
+    });
+  });
 }
