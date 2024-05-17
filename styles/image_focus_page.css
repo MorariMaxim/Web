@@ -3,7 +3,7 @@ main {
 }
 .image-container {
   max-width: 600px;
-  margin: 0 auto;
+  margin: 0 auto; 
   text-align: center;
   background-color: #fff;
   padding: 20px;

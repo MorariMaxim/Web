@@ -71,3 +71,15 @@ Orice proiect trebuie sa aiba minim 5 pagini care respecta aceste conditii pentr
 a lua nota 5. Daca ai 10, vei lua 10.
 
 
+
+
+
+clarificari:
+- pagina de upload doar se scaleaza, nu este chiar in spiritul "responsive" 
+- lipsesc niste facilitati de exemplu de conectare multiplia al diverse servicii sau de upload a pozelor catre acele servicii... 
+- nu vad nici pagina care permite construirea unui proiect ceva cu imaginile prelucrate
+
+- pagina de conectare la alte servicii web ce ptermit stocarea de imagini
+- pagina de upload
+
+- Orice proiect trebuie sa aiba minim 5 pagini care respecta aceste conditii pentru a lua nota 5. Daca ai 10, vei lua 10.

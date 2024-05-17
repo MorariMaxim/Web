@@ -8,7 +8,7 @@ main {
   justify-content: center;
 }
 
-#filter-bar {
+.filter-bar {
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -118,10 +118,10 @@ input[type="date"] {
 }
 
 @media screen and (max-width: 730px) {
-  #filter-bar {
+  .filter-bar {
     flex-wrap: wrap;
-    flex-direction: row;
-    height: 100%;
+    flex-direction: column;
+    height: 90%;
     justify-content: center;
     align-items: center;
   }
@@ -142,7 +142,6 @@ input[type="date"] {
     display: none;
   }
 }
-
 
 /*  */
 
@@ -171,4 +170,19 @@ input[type="date"] {
   padding: 20px;
   border: 1px solid #ccc;
   margin-bottom: 20px;
+}
+
+.filterBarVariant {
+  justify-content: center;
+}
+
+.stylingBlock {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+h1 {
+  text-align: center;
 }

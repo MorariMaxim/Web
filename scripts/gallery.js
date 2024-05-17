@@ -1,4 +1,5 @@
 import { redirectTo } from "./common.js";
+import { serverIp } from "./server_location.js";
 
 let bar = document.getElementById("filter-phact-menu");
 
@@ -8,14 +9,10 @@ let button = document.getElementById("toggleButton");
 button.addEventListener("click", function () {
   let computedStyle = window.getComputedStyle(bar);
 
-  console.log(computedStyle.display);
-
   if (computedStyle.display === "none") {
-    console.log("first");
     bar.style.display = "block";
     gallery.style.display = "none";
   } else {
-    console.log("second");
     bar.style.display = "none";
     gallery.style.display = "block";
   }
@@ -81,16 +78,11 @@ export const focusImage = () => {
   if (selectAlls.length == 0) {
     alert("No image selected");
   } else {
-    console.log("source = " + selectAlls[0].src);
 
-    let foreign = selectAlls[0].getAttribute("foreign") != null;
-
-    console.log(selectAlls[0].getAttribute("foreign"));
 
     redirectTo("../mainPages/image_focus_page.html", {
       focusedImage: selectAlls[0].src,
       postId: selectAlls[0].getAttribute("postId"),
-      foreign: selectAlls[0].getAttribute("foreign"),
       type: selectAlls[0].getAttribute("type"),
     });
   }
@@ -111,6 +103,14 @@ function showSelectedSection(select) {
     menu.style.display =
       menu.getAttribute("phactType") == value ? "block" : "none";
   });
+  //newImgurFBar
+
+  let filterBars = document.querySelectorAll(".filterBarVariant");
+
+  filterBars.forEach((menu) => {
+    menu.style.display =
+      menu.getAttribute("fbarType") == value ? "block" : "none";
+  });
 }
 
 function actionFromSelectedValue(value) {
@@ -119,22 +119,28 @@ function actionFromSelectedValue(value) {
 }
 let sectionSelect = document.getElementById("sectionSelect");
 
-let confirmSectionChange = false;
+let previousSection = sectionSelect.value;
 sectionSelect.addEventListener("change", (event) => {
   let result = true;
-  if (confirmSectionChange) {
-    result = window.confirm(
-      "Proceeding will discard current gallery images.\nDo you want to continue?"
-    );
+
+  if (previousSection != sectionSelect.value) {
+    let images = document.querySelectorAll(".gallery-item");
+
+    if (images.length != 0)
+      result = window.confirm(
+        "Proceeding will discard current gallery images.\nDo you want to continue?"
+      );
+
     if (result) deleteGalleryImages();
+
+    previousSection = sectionSelect.value;
   }
-  if (result) {
-    showSelectedSection(event.target);
-  }
+
+  if (result) showSelectedSection(event.target);
 });
+
 sectionSelect.dispatchEvent(new Event("change"));
 
-confirmSectionChange = true;
 filterButton.addEventListener("click", async () => {
   const value = sectionSelect.value;
 
@@ -142,42 +148,44 @@ filterButton.addEventListener("click", async () => {
   else if (value == "Local Imgur") searchLocalImgurRequest();
 });
 
+fetchEdits.addEventListener("click", async () => {
+  requestUserEdits();
+});
+
 async function downloadFromImgurRequest() {
-  let options = {};
+  let queryParams = new URLSearchParams({
+    type: "imgurDownload",
+  });
+
+  let headers = {
+    sessionId: localStorage.getItem("sessionId"),
+  };
 
   if (imgurSection.value != "none") {
-    options.section = imgurSection.value;
+    queryParams.append("section", "valueimgurSection.value");
   }
   if (imgurSort.value != "none") {
-    options.sort = imgurSort.value;
+    queryParams.append("sort", "imgurSort.value");
   }
   if (imgurWindow.value != "none") {
-    options.window = imgurWindow.value;
+    queryParams.append("window", "imgurWindow.value");
   }
 
   let title = imgurTitle.value.trim();
 
-  let tags = keepSpacesAndLetters(imgurKeywords.value);
+  let tags = keepSpacesAndLetters(imgurKeywords.value).trim();
 
   if (tags != "" && title != "")
     alert(
       "Can't search using title and tags at the same time, it defaults to tags"
     );
   if (tags != "") {
-    options.q = tags;
+    queryParams.append("q", tags);
   } else if (title != "") {
-    options.q = `title: ${title}`;
+    queryParams.append("q", `title: ${title}`);
   }
 
-  let headers = {
-    "Content-Type": "application/json",
-    type: "imgurDownload",
-    ...options,
-  };
-
-  console.log(headers);
-
-  const response = await fetch("/searchImages", {
+  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
     method: "get",
     headers,
   });
@@ -193,11 +201,19 @@ async function downloadFromImgurRequest() {
 async function searchLocalImgurRequest() {
   let headers = {
     "Content-Type": "application/json",
-    type: "imgurLocal",
     sessionId: localStorage.getItem("sessionId"),
   };
+  let titleFilter = localImgurTitle.value;
 
-  const response = await fetch("/searchImages", {
+  let kwordsFilter = localImgurKeywords.value;
+
+  let queryParams = new URLSearchParams({
+    title: titleFilter,
+    type: "imgurLocal",
+    tags: kwordsFilter.split(/\s+/),
+  });
+
+  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
     method: "get",
     headers,
   });
@@ -207,13 +223,7 @@ async function searchLocalImgurRequest() {
     console.log(responseBody);
     if (responseBody.length == 0) alert("no images found");
     else {
-      fillGallery(
-        responseBody.map((id) => {
-          return {
-            src: `http://192.168.0.198:3000/getImage?id=${id.image_id}`,
-          };
-        })
-      );
+      fillGallery(mapIdsToUrls(responseBody.map((item) => item.image_id)));
     }
   } catch (e) {
     alert("Seemingly there was a backend error, the server returned no images");
@@ -222,7 +232,6 @@ async function searchLocalImgurRequest() {
 
 function keepSpacesAndLetters(text) {
   text = text.replace(/,/g, " ");
-  console.log(text);
   return text.replace(/[^a-zA-Z\s]/g, "");
 }
 
@@ -249,8 +258,6 @@ function fillGallery(images) {
 }
 
 let saveButtons = document.querySelectorAll(".save_phact");
-
-console.log(saveButtons);
 
 saveButtons.forEach((button) => {
   button.addEventListener("click", saveImagesRequest);
@@ -291,8 +298,7 @@ async function saveImagesRequest() {
     const imgElement = document.querySelector(`img[src="${image}"]`);
 
     if (imgElement && response[image] != "fail") {
-      imgElement.src = `http://192.168.0.198:3000/getImage?id=${response[image]}`;
-      imgElement.setAttribute("foreign", "false");
+      imgElement.src = `http://${serverIp}:3000/getImage?id=${response[image]}`;
       imgElement.setAttribute("type", "Local Imgur");
     } else {
       failed.push(image);
@@ -314,4 +320,34 @@ function getImgurDataArray(htmlImages) {
 
 function getSelectedImages() {
   return document.querySelectorAll(".selected-image");
+}
+
+async function requestUserEdits() {
+  let headers = {
+    "Content-Type": "application/json",
+    sessionId: localStorage.getItem("sessionId"),
+  };
+
+  let queryParams = new URLSearchParams({
+    type: "userEdits",
+  });
+
+  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
+    method: "get",
+    headers,
+  });
+
+  let ids = await response.json();
+
+  fillGallery(mapIdsToUrls(ids.map((id) => id.id)));
+}
+
+function mapIdsToUrls(ids) {
+  ids = ids.map((id) => {
+    return {
+      src: `http://${serverIp}:3000/getImage?id=${id}`,
+    };
+  });
+
+  return ids;
 }

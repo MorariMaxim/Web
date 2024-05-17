@@ -30,8 +30,7 @@ addHeader(logged);
 setUserName();
 
 function addHeader(logged) {
-  console.log(logged);
-  console.log("addheader");
+  console.log(logged); 
   let header = logged ? logged_header : unlogged_header;
 
   let stylesheet = logged

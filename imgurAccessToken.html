@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Imgur OAuth Callback</title>
+  </head>
+  <body>
+    <h1>Imgur OAuth Callback</h1>
+    <script>
+      async function getAccessTokenFromUrl() {
+        const hash = window.location.hash.substring(1);
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+        const expiresIn = params.get("expires_in");
+        const tokenType = params.get("token_type");
+
+        if (accessToken) {
+          document.body.innerHTML = `
+                    <h2>Access Token</h2>
+                    <p>${accessToken}</p>
+                    <h2>Refresh Token</h2>
+                    <p>${refreshToken}</p>
+                    <h2>Expires In</h2>
+                    <p>${expiresIn}</p>
+                    <h2>Token Type</h2>
+                    <p>${tokenType}</p>
+                `;
+        } else {
+          document.body.innerHTML = "<p>Error: No access token found</p>";
+        }
+
+        //storeImgurAccessToken
+
+        const response = await fetch("/storeImgurAccessToken", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            sessionId: localStorage.getItem("sessionId"),
+          },
+
+          body: JSON.stringify({ accessToken,refreshToken,expiresIn,tokenType }),
+        });
+
+        console.log(response);
+      }
+
+      window.onload = getAccessTokenFromUrl;
+    </script>
+  </body>
+</html>

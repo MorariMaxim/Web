@@ -1,29 +1,25 @@
 export const redirectTo = (targetUrl, data) => {
-  targetUrl += "?";
+  let queryParams = new URLSearchParams();
+
   for (const key in data) {
-    if (Object.hasOwn(data, key)) {
-      const value = data[key];
-      console.log(`Key: ${key}, Value: ${value}`);
-      targetUrl += `&${encodeURIComponent(key)}=${encodeURIComponent(
-        JSON.stringify(value)
-      )}`;
-    }
+    queryParams.append(key, data[key]);
   }
 
-  window.location.href = targetUrl;
-};
+  console.log(`targetUrl?${queryParams.toString()}`);
 
+  window.location.href = `${targetUrl}?${queryParams.toString()}`;
+};
 
 export function waitForCondition(condition, interval) {
   return new Promise((resolve) => {
     const checkCondition = () => {
       if (condition()) {
-        resolve();  
+        resolve();
       } else {
-        setTimeout(checkCondition, interval);  
+        setTimeout(checkCondition, interval);
       }
     };
 
-    checkCondition();  
+    checkCondition();
   });
 }

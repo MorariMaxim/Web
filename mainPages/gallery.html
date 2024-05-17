@@ -126,64 +126,104 @@
             </li>
           </ul>
         </div>
-        <div id="filter-bar">
+        <div class="filter-bar">
           <!-- filter bar -->
-          <div class="form-group">
-            <label for="imgurKeywords">Keywords</label>
-            <input
-              type="text"
-              id="imgurKeywords"
-              name="imgurKeywords"
-              placeholder="cats, funny "
-              value=""
-            />
-          </div>
-          <div class="form-group">
-            <label for="imgurTitle">Title</label>
-            <input
-              type="text"
-              id="imgurTitle"
-              name="imgurTitle"
-              placeholder="cats, funny "
-              value="napoleon"
-            />
+          <div id="newImgurFBar" class="filterBarVariant" fbarType="New Imgur">
+            <div class="stylingBlock"><div class="form-group">
+              <label for="imgurKeywords">Keywords</label>
+              <input
+                type="text"
+                id="imgurKeywords"
+                name="imgurKeywords"
+                placeholder="cats, funny "
+                value=""
+              />
+            </div>
+            <div class="form-group">
+              <label for="imgurTitle">Title</label>
+              <input
+                type="text"
+                id="imgurTitle"
+                name="imgurTitle"
+                placeholder="cats, funny "
+                value="napoleon"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="imgurSection">Section</label>
+              <select id="imgurSection" name="imgurSection">
+                <option value="none">none</option>
+                <option value="hot">Hot</option>
+                <option value="top ">Top</option>
+                <option value="user">User</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="imgurSort">sort</label>
+              <select id="imgurSort" name="imgurSort">
+                <option value="none">none</option>
+                <option value="viral">viral</option>
+                <option value="top">Top</option>
+                <option value="time">time</option>
+                <option value="user">user</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="imgurWindow">window</label>
+              <select id="imgurWindow" name="imgurWindow">
+                <option value="none">none</option>
+                <option value="day">day</option>
+                <option value="week">week</option>
+                <option value="month">month</option>
+                <option value="year">year</option>
+                <option value="all">all</option>
+              </select>
+            </div></div>
           </div>
 
-          <div class="form-group">
-            <label for="imgurSection">Section</label>
-            <select id="imgurSection" name="imgurSection">
-              <option value="none">none</option>
-              <option value="hot">Hot</option>
-              <option value="top ">Top</option>
-              <option value="user">User</option>
-            </select>
-          </div>
+          <!-- local imgur -->
 
-          <div class="form-group">
-            <label for="imgurSort">sort</label>
-            <select id="imgurSort" name="imgurSort">
-              <option value="none">none</option>
-              <option value="viral">viral</option>
-              <option value="top">Top</option>
-              <option value="time">time</option>
-              <option value="user">user</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="imgurWindow">window</label>
-            <select id="imgurWindow" name="imgurWindow">
-              <option value="none">none</option>
-              <option value="day">day</option>
-              <option value="week">week</option>
-              <option value="month">month</option>
-              <option value="year">year</option>
-              <option value="all">all</option>
-            </select>
+          <div
+            id="localImgurFBar"
+            class="filterBarVariant"
+            fbarType="Local Imgur"
+          >
+            <div class="stylingBlock">
+              <div class="form-group">
+                <label for="localImgurKeywords">Keywords</label>
+                <input
+                  type="text"
+                  id="localImgurKeywords"
+                  name="localImgurKeywords"
+                  placeholder="cats, funny "
+                  value=""
+                />
+              </div>
+              <div class="form-group">
+                <label for="localImgurTitle">Title</label>
+                <input
+                  type="text"
+                  id="localImgurTitle"
+                  name="localImgurTitle"
+                  placeholder="cats, funny "
+                  value="napoleon"
+                />
+              </div>
+            </div>
           </div>
           <button id="filterButton" class="nice-button" role="button">
             Fetch
           </button>
+
+          <div class="filterBarVariant" fbarType="Local Imgur">
+            <div class="stylingBlock">
+              <h1>or</h1>
+              <button id="fetchEdits" class="nice-button">Get Edits</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -215,24 +255,6 @@
           </div>
           <div class="gallery-item">
             <img src="https://source.unsplash.com/random/400x400" alt="4" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x400" alt="  4" />
           </div>
           <div class="gallery-item">
             <img src="https://source.unsplash.com/random/600x600" alt="  5" />

@@ -67,6 +67,7 @@ mainImage.onload = async function () {
       imageContainer.offsetHeight * 0.5
     }px`; */
     updateRectangle();
+
   });
 };
 
@@ -188,7 +189,7 @@ async function saveCropArea(e) {
   let mainCanvas = document.getElementById("mainCanvas");
 
   let image = getPartOfCanvas(cropX, cropY, cropWidth, cropHeight, mainCanvas);
-  
+
   const response = await fetch("/saveImages", {
     method: "post",
     body: JSON.stringify({
@@ -233,15 +234,7 @@ function downloadImage(image) {
   downloadLink.download = "cropped_image.jpg";
   downloadLink.click();
 }
-
-function setParentSize(height, width) {
-  parentHeight = height;
-  parentWidth = width;
-
-  imageContainer.width = width;
-  imageContainer.height = height;
-}
-
+ 
 function addFormListeners() {
   document
     .getElementById("applyFilterBtn")

@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image Details</title>
     <link rel="stylesheet" href="../styles/image_focus_page.css" />
+    <link rel="stylesheet" href="../styles/uploadButtonForm.css" />
   </head>
   <body>
     <main>
       <div class="image-container">
         <img id="focusedImage" src="../resources/th.jpg" alt="Description" />
-        <button class="nice-button2 focused-image-buttons" id="edit-button">
+        <button class="nice-button2 focused-image-buttons" id="editButton">
           Edit
         </button>
 
@@ -18,8 +19,25 @@
           class="nice-button2 focused-image-buttons"
           id="fetchCommentsButton"
         >
-          Get Comments
+          Get Comments, Details
         </button>
+
+        <button
+          class="nice-button2 focused-image-buttons"
+          id="uploadImgurButton"
+        >
+          Upload to Imgur
+        </button>
+
+        <div id="imgurUploadFormContainer" class="hidden">
+          <form id="imgurUploadForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required />
+
+            <button id="uploadImgurSubmit" class="nice-button2 focused-image-buttons" style="width: 20%;">Submit</button>
+          </form>
+        </div>
+
         <div class="image-details">
           <h2>Image Details</h2>
           <ul class="bolder-text" id="imageDetailList"></ul>
@@ -31,154 +49,36 @@
       </div>
     </main>
   </body>
-  <script type="module" src="../scripts/prepend_header.js"></script>
-
   <script>
-    const queryString = window.location.search;
+    document
+      .getElementById("uploadButton")
+      .addEventListener("click", function () {
+        document.getElementById("formContainer").classList.toggle("hidden");
+      });
 
-    console.log(decodeURIComponent(queryString));
-    console.log(decodeURIComponent(window.location));
+    document
+      .getElementById("imageForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
 
-    const urlParams = new URLSearchParams(queryString);
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        const imageUpload = document.getElementById("imageUpload").files[0];
 
-    function getQueryParameter(name) {
-      return JSON.parse(decodeURIComponent(urlParams.get(name)));
-    }
-
-    const focusedImageEnc = urlParams.get("focusedImage");
-
-    const foreign = getQueryParameter("foreign") == "true";
-
-    console.log(foreign);
-    console.log("true" );
-
-    if (focusedImageEnc) {
-      const decodedData = decodeURIComponent(focusedImageEnc);
-
-      const dataArray = JSON.parse(decodedData);
-
-      let editedImage = document.getElementById("focusedImage");
-
-      editedImage.src = dataArray;
-    }
-    var editButton = document.getElementById("edit-button");
-
-    editButton.addEventListener("click", (event) => {
-      if (foreign) {
-        result = window.confirm(
-          "Because of foreign origin policy, you won't be able to save the edited image. Proceeding will download the image and associate it with your account. Continue?"
-        );
-
-        if (result) {
-          // to do
-        }
-      } else {
-        let focusedImage = document.getElementById("focusedImage");
-
-        let dataString = JSON.stringify(focusedImage.src);
-
-        let encodedData = encodeURIComponent(dataString);
-
-        window.location.href = `../mainPages/photo_editor.html?focusedImage=${encodedData}`;
-      }
-    });
-
-    var commentsButton = document.getElementById("fetchCommentsButton");
-
-    commentsButton.addEventListener("click", async (event) => {
-      const pattern = /id=(\d+)/;
-
-      const match = pattern.exec(focusedImageEnc);
-
-      let id;
-      let headers = {};
-
-      if (match) {
-        id = match[1];
-        headers.imageId = id;
-        console.log(id);
-      } else {
-        let postId = getQueryParameter("postId");
-
-        if (postId) headers.postid = postId;
-        else {
-          alert("Can't perform action for current object");
+        if (!imageUpload) {
+          alert("Please select an image to upload.");
           return;
         }
-      }
 
-      const response = await fetch("/getComments", {
-        method: "get",
-        headers,
+        console.log("Title:", title);
+        console.log("Description:", description);
+        console.log("Image:", imageUpload);
+
+        // Handle the form submission, e.g., upload the data to the server
+        alert("Form submitted successfully!");
       });
-
-      let postData = await response.json();
-
-      function addImageDetails(details) {
-        imageDetailList.innerHTML = "";
-        let highlighted = [];
-
-        if (details.title) highlighted.push({ title: details.title });
-        if (details.description)
-          highlighted.push({ description: details.description });
-        if (details.views) highlighted.push({ views: details.views });
-        if (details.ups) highlighted.push({ ups: details.ups });
-        if (details.downs) highlighted.push({ downs: details.downs });
-
-        function addDetail(key, value) {
-          const li = document.createElement("li");
-          li.innerHTML = `<span style="font-weight: bold; color: red;">${key.toUpperCase()}:</span> ${value}`;
-          imageDetailList.appendChild(li);
-        }
-
-        for (const detail_ in highlighted) {
-          for (const key in highlighted[detail_]) {
-            const fieldName = key;
-            const fieldValue = highlighted[detail_][key];
-            addDetail(fieldName, fieldValue);
-          }
-        }
-
-        let tags = [];
-
-        details.tags?.forEach((tag) => {
-          tags.push(tag.name);
-        });
-        if (tags.length) addDetail("tags", tags.join(", "));
-      }
-
-      function addComment(commentInfo, parent) {
-        // Create the comment div element
-        const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-
-        // Create the user span element
-        const userSpan = document.createElement("span");
-        userSpan.classList.add("user");
-        userSpan.textContent = commentInfo.author;
-
-        // Create the comment paragraph element
-        const commentP = document.createElement("p");
-        commentP.textContent = commentInfo.comment;
-
-        // Append user span and comment paragraph to the comment div
-        commentDiv.appendChild(userSpan);
-        commentDiv.appendChild(commentP);
-
-        // Append the comment div to the specified parent element
-        parent.appendChild(commentDiv);
-
-        commentInfo.children.forEach((child) => {
-          addComment(child, commentDiv);
-        });
-      }
-      commentsSection.innerHTML = "<h2>Comments</h2>";
-
-      [...postData.comments].forEach((comment) => {
-        addComment(comment, document.getElementById("commentsSection"));
-      });
-
-      addImageDetails(postData.details);
-    });
   </script>
+
+  <script type="module" src="../scripts/prepend_header.js"></script>
+  <script type="module" src="../scripts/image_focus_page.js"></script>
 </html>

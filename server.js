@@ -13,9 +13,11 @@ import {
 import axios from "axios";
 import fs from "fs";
 import { clientId } from "./server/imgur-credentials.js";
-import { config } from "process";
+import { allowedNodeEnvironmentFlags, config } from "process";
 import { DESTRUCTION } from "dns";
 // import { Database } from "sqlite3";
+
+const accessToken = "42c4f1fc4b77765844a5ff3f8d78c77acecb8414";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -74,11 +76,16 @@ const server = createServer(async (req, res) => {
     "resources",
     "scripts",
     "styles",
-  ]; 
-
-  if (pathComponents.length == 0) {
+  ];
+  http: if (pathComponents.length == 0) {
     const filePath = join(__dirname, "mainPages", "main_page.html");
     serveFile(res, filePath);
+  } else if (pathComponents[0] == "imgurAccessToken") {
+    serveFile(res, "imgurAccessToken.html");
+  } else if (pathComponents[0] == "storeImgurAccessToken") {
+    storeImgurAccessToken(req, res);
+  } else if (pathComponents[0] == "uploadImage") {
+    uploadImage(req, res);
   } else if (pathComponents[0] == "getComments") {
     getComments(req, res);
   } else if (pathComponents[0] == "getImage") {
@@ -198,20 +205,28 @@ async function loginRoute(req, res) {
 }
 
 async function searchImagesRoute(req, res) {
-  const type = req.headers.type;
+  console.log("searchImagesRoute");
+  const parsedUrl = parse(req.url, true);
+  const queryParams = parsedUrl.query;
+
+  let type = queryParams.type;
+
+  console.log(req.url);
+  console.log(queryParams.options);
+
   let options = {};
   if (type == "imgurDownload") {
-    if (req.headers.section) {
-      options.section = req.headers.section;
+    if (queryParams.section) {
+      options.section = queryParams.section;
     }
-    if (req.headers.window) {
-      options.window = req.headers.window;
+    if (queryParams.window) {
+      options.window = queryParams.window;
     }
-    if (req.headers.sort) {
-      options.sort = req.headers.sort;
+    if (queryParams.sort) {
+      options.sort = queryParams.sort;
     }
-    if (req.headers.q) {
-      options.q = req.headers.q;
+    if (queryParams.q) {
+      options.q = queryParams.q;
     }
 
     console.log(`received options: ${JSON.stringify(options)}`);
@@ -219,22 +234,14 @@ async function searchImagesRoute(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(images));
-    // res.end(null);
   } else if (type == "imgurLocal") {
-    let userId = await dataBase.getUserIdBySessionId(req.headers.sessionid);
-
-    if (!userId) {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("invalid sessionID");
-      return;
-    }
-
-    let images = await dataBase.getUserImages(userId);
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(images));
+    searchImgurLocallyRoute(req, res);
+  } else if (type == "userEdits") {
+    console.log("userEdits");
+    getUserEditsRoute(req, res);
   } else {
     res.writeHead(404);
+    res.end();
   }
 }
 
@@ -244,7 +251,7 @@ async function saveImages(req, res) {
   console.log(imageType);
 
   let sessionId = req.headers.sessionid;
-  if (!(await checkSessionId(sessionId))) return;
+  if (!(await checkSessionId(req, res))) return;
 
   console.log("Trying to save images for user with sessionId " + sessionId);
 
@@ -272,11 +279,8 @@ async function saveDataArrayImage(req, res) {
     );
     console.log(imageId);
     if (imageId.ok) {
-      /* res.writeHead(500);
-      res.end("server side error"); */
-
       if (
-        saveImageLocally(
+        await saveImageLocally(
           dataArray,
           `server/repository/images/${imageId.imageId}${extension}`
         )
@@ -300,7 +304,6 @@ async function saveImageLocally(buffer, filename) {
 }
 
 async function saveNewImgurImages(req, res) {
-  console.log("saveNewImgurImages");
   let body = await getBodyFromRequest(req);
   let sessionId = req.headers.sessionid;
   let response = {};
@@ -318,13 +321,11 @@ async function saveNewImgurImages(req, res) {
       imageUrl
     );
     let fail = false;
-    console.log("past saveImgurImageToUser");
-    console.log("result " + JSON.stringify( result));
     if (result.success) {
       if (result.download) {
         let downloaded = await downloadImgurImage(
           imageUrl,
-              "server/repository/images/" + result.id + extname(imageUrl)
+          "server/repository/images/" + result.id + extname(imageUrl)
         );
         if (!downloaded) fail = true;
       }
@@ -335,7 +336,9 @@ async function saveNewImgurImages(req, res) {
 
       let meta = await getImgurMetaDataFromPostId(postId);
 
-      saveImageMetaData(meta, result.id);
+      await saveImageMetaData(meta, result.id);
+
+      console.log(await dataBase.storeImgurMetaData(result.id, meta.details));
     } else response[imageUrl] = "fail";
   }
 
@@ -345,8 +348,7 @@ async function saveNewImgurImages(req, res) {
 }
 
 async function downloadImgurImage(imageUrl, imagePath) {
-
-  console.log(`downloadImgurImage ${imageUrl,imagePath}`);
+  console.log(`downloadImgurImage ${(imageUrl, imagePath)}`);
   const imageResponse = await axios.get(imageUrl, {
     responseType: "arraybuffer",
   });
@@ -366,33 +368,46 @@ async function downloadImgurImage(imageUrl, imagePath) {
   });
 }
 
-async function checkSessionId(sessionId, res) {
-  let userId = dataBase.getUserIdBySessionId(sessionId);
+async function checkSessionId(req, res) {
+  let userId = await dataBase.getUserIdBySessionId(req.headers.sessionid);
 
   if (userId == null) {
     res.writeHead(403, { "Content-Type": "text/plain" });
     res.end("Invalid sessionId");
-    return false;
+    return null;
   }
 
-  return true;
+  return userId;
 }
 
+// testing function
 (async () => {
-  //const imageResponse = await axios.get("http://localhost:3000/getImage?id=1");
   console.log(await dataBase.getImages());
-  /*
-  await saveImageMetaData(
-    {
-      details: { likes: 2 },
-      comments: [{ comment: "cool image" }],
-    },
-    2
+
+  // deleteUserImgurPosts(accessToken, "mmaxim2291");
+
+  // console.log(await imageId2Path(13, "ext"));
+
+  // await deleteImgurImage(accessToken, "kAyn68XlOZOSB2Y");
+
+  /*  let uploadedImage = await uploadImageToImgur(
+    accessToken,
+    "server/repository/images/1.jpg"
   );
 
-  let meta = await getImageMetaData(2);
+  console.log(uploadedImage);
 
-  console.log(meta); */
+  console.log(
+    await shareImageToCommunity(
+      uploadedImage.id,
+      accessToken,
+      "SharedImage",
+      null,
+      null,
+      null,
+      null
+    )
+  ); */
 })();
 
 async function getImage(req, res) {
@@ -486,21 +501,24 @@ async function getImageMetaData(imageId) {
 }
 
 async function saveImageMetaData(meta, imageId) {
-  try {
-    // Write the metadata to the file
-    await writeFile(
+  return await new Promise((resolve, reject) => {
+    fs.writeFile(
       `server/repository/image_meta/${imageId}.json`,
-      JSON.stringify(meta)
+      JSON.stringify(meta),
+      (err) => {
+        if (err) {
+          console.error("Error writing image data to file:", err);
+          resolve(false);
+        } else {
+          console.log(
+            "Image data written to file:",
+            `server/repository/image_meta/${imageId}.json`
+          );
+          resolve(true);
+        }
+      }
     );
-
-    // Indicate success
-    return true;
-  } catch (err) {
-    // Log the error
-    console.error("Error saving metadata:", err);
-    // Indicate failure
-    return false;
-  }
+  });
 }
 
 function trimMetaData(meta) {
@@ -552,4 +570,324 @@ async function getImgurMetaDataFromPostId(postId) {
   response.details = await fetchPostInfo(postId, clientId);
 
   return trimMetaData(response);
+}
+
+async function searchImgurLocallyRoute(req, res) {
+  const parsedUrl = parse(req.url, true);
+  const queryParams = parsedUrl.query;
+
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let tags = queryParams.tags.split(/\s+/);
+
+  if (tags.length == 0) tags = null;
+
+  console.log(`tags: ${tags}`);
+
+  let title = queryParams.title;
+
+  let result = await searchImgurLocally(userId, tags, title);
+
+  console.log(result);
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(
+    JSON.stringify(
+      result.map((item) => {
+        return { image_id: item.image_id };
+      })
+    )
+  );
+}
+
+async function searchImgurLocally(userId, tags, title) {
+  let ids = (await dataBase.getUserImages(userId)).map(
+    (image) => image.image_id
+  );
+
+  let imgurs = await dataBase.retainImgurImages(ids);
+
+  let metas = await Promise.all(
+    imgurs.map(async (id) => await dataBase.getImgurMetaData(id))
+  );
+
+  console.log("before filters");
+
+  console.log(`title :${title}`);
+
+  console.log(`tags :${tags}`);
+
+  if (title) metas = filterImgurByTitle(metas, title);
+
+  if (tags) metas = filterImgurByTags(metas, tags);
+
+  return metas;
+}
+
+function filterImgurByTitle(metas, titleSubstring) {
+  return metas.filter((meta) =>
+    meta.title.toLowerCase().includes(titleSubstring.toLowerCase())
+  );
+}
+
+function filterImgurByTags(metas, tags) {
+  return metas.filter((meta) =>
+    tags.every((tag) => meta.tags.toLowerCase().includes(tag.toLowerCase()))
+  );
+}
+
+function stringToRegex(str) {
+  const parts = str.match(/^\/(.*)\/([a-z]*)$/);
+  if (!parts) {
+    throw new Error("Invalid regular expression string");
+  }
+  const pattern = parts[1];
+  const flags = parts[2];
+  return new RegExp(pattern, flags);
+}
+
+async function getUserEditsRoute(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let results = await dataBase.getUserEdits(userId, "edit");
+
+  console.log(results);
+
+  res.writeHead(200);
+  res.end(
+    JSON.stringify(
+      results.map((item) => {
+        return { id: item.id };
+      })
+    )
+  );
+}
+
+//"server/repository/images/1.jpg"
+async function uploadImageToImgur(accessToken, imageFilePath, title) {
+  try {
+    const imageData = await readFile(imageFilePath);
+
+    const base64Image = imageData.toString("base64");
+
+    const response = await axios.post(
+      "https://api.imgur.com/3/image",
+      {
+        image: base64Image,
+        type: "base64",
+        title,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const uploadedImage = response.data.data;
+
+    return uploadedImage;
+  } catch (error) {
+    console.error("Error uploading image:", error.response);
+    throw error;
+  }
+}
+
+async function shareImageToCommunity(
+  imageHash,
+  accessToken,
+  title,
+  topic,
+  terms,
+  mature,
+  tags
+) {
+  try {
+    // Make a POST request to share the image with the community
+    const response = await axios.post(
+      `https://api.imgur.com/3/gallery/image/${imageHash}`,
+      {
+        title: title,
+        topic: topic,
+        terms: terms,
+        mature: mature,
+        tags: tags,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Extract the response data
+    const responseData = response.data;
+
+    // Return the response data
+    return responseData;
+  } catch (error) {
+    console.error("Error sharing image to community:", error.message);
+    return null;
+  }
+}
+
+async function uploadImage(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let accessToken = (await dataBase.getUserImgurAccessToken(userId)).token;
+
+  console.log("token stored: " + accessToken);
+
+  if (!accessToken) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+
+    res.end(JSON.stringify({ cause: "accessToken" }));
+
+    return;
+  }
+
+  const parsedUrl = parse(req.url, true);
+  const queryParams = parsedUrl.query;
+
+  const to = queryParams.to;
+
+  const imageId = queryParams.imageId;
+
+  let responseCode = 200;
+  let responseBody = {};
+
+  let image = await dataBase.getImageById(imageId);
+
+  if (!image) {
+    responseBody.cause = "no such image on the server";
+    responseCode = 400;
+  } else if (to == "imgur") {
+    let uploadedImage = await uploadImageToImgur(
+      accessToken,
+      imageId2Path(imageId, image.ext),
+      queryParams.title
+    );
+
+    let imageHash = uploadedImage.id;
+
+    if (imageHash) {
+      let result = await shareImageToCommunity(
+        imageHash,
+        accessToken,
+        queryParams.title,
+        null,
+        null,
+        null,
+        null
+      );
+
+      responseBody.platformResponse = result;
+    } else {
+      deleteImgurImage(accessToken, uploadedImage.deletehash);
+
+      responseBody.cause = "couldn't upload to imgur";
+      responseCode = 500;
+    }
+  } else {
+    responseBody.cause = "unknown platform";
+    responseCode = 400;
+  }
+
+  res.writeHead(responseCode, { "Content-Type": "application/json" });
+
+  res.end(JSON.stringify(responseBody));
+}
+
+function imageId2Path(imageId, ext) {
+  return `server/repository/images/${imageId}${addLeadingPeriod(ext)}`;
+}
+
+function addLeadingPeriod(str) {
+  return str.startsWith(".") ? str : `.${str}`;
+}
+
+async function deleteImgurImage(accessToken, imageId) {
+  const url = `https://api.imgur.com/3/image/${imageId}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log("Image deleted successfully:", data);
+  } else {
+    console.error(
+      "Failed to delete image:",
+      response.status,
+      response.statusText
+    );
+  }
+}
+
+async function getUserImgurPosts(username, accessToken) {
+  try {
+    // Fetch user's posts from Imgur API
+    const response = await axios.get(
+      `https://api.imgur.com/3/account/${username}/submissions`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // Extract post data from the response
+    const postData = response.data.data;
+
+    // Return the posts
+    return postData;
+  } catch (error) {
+    // Write error message to a file
+    fs.writeFileSync(
+      "error.html",
+      `${error.response ? error.response.data : error.message}\n`
+    );
+    return [];
+  }
+}
+
+async function deleteUserImgurPosts(accessToken, username) {
+  try {
+    let userPosts = await getUserImgurPosts(username, accessToken);
+
+    // Map the array of promises
+    let deletionPromises = userPosts.map(async (post) => {
+      await deleteImgurImage(accessToken, post.id);
+    });
+
+    // Wait for all promises to resolve
+    await Promise.all(deletionPromises);
+
+    console.log("All images deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting images:", error);
+  }
+}
+
+async function storeImgurAccessToken(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let body = await getBodyFromRequest(req);
+
+  let token = body.accessToken;
+
+  let ok = await dataBase.insertImgurAccessToken(userId, token);
+
+  console.log(ok);
+
+  res.end();
 }

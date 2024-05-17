@@ -1,0 +1,31 @@
+imgurMeta (                 
+    image_id INTEGER,
+    title TEXT,
+    description TEXT,
+    views INTEGER,
+    ups INTEGER,
+    downs INTEGER,
+    tags TEXT,
+    FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+
+images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    type TEXT,
+    ext TEXT
+)
+
+imgurImages (        
+    postId TEXT,
+    url TEXT,                  
+    image_id INTEGER,
+    FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+    UNIQUE(postId,url)
+)
+
+userImages (        
+    user_id INTEGER,                       
+    image_id INTEGER,
+    FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id,image_id)
+)

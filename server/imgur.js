@@ -45,7 +45,6 @@ export function getImgLinksFromImgurAlbums(data) {
           imgLinks.push({
             src: image.link,
             postId: item.id,
-            foreign: true,
             type: "New Imgur",
           });
         }
@@ -54,7 +53,6 @@ export function getImgLinksFromImgurAlbums(data) {
       imgLinks.push({
         src: item.link,
         postId: item.id,
-        foreign: true,
         type: "New Imgur",
       });
     }

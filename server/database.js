@@ -12,6 +12,7 @@ class DataBase {
         this.db.run("DROP TABLE IF EXISTS images");
         this.db.run("DROP TABLE IF EXISTS imgurImages");
         this.db.run("DROP TABLE IF EXISTS userImages");
+        this.db.run("DROP TABLE IF EXISTS imgurMeta");
 
         deleteFilesInDirectory("server/repository/images");
         deleteFilesInDirectory("server/repository/image_meta");
@@ -48,6 +49,25 @@ class DataBase {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 UNIQUE(user_id,image_id)
             );`);
+
+      this.db.run(`CREATE TABLE IF NOT EXISTS imgurMeta (                 
+              image_id INTEGER,
+              title TEXT,
+              description TEXT,
+              views INTEGER,
+              ups INTEGER,
+              downs INTEGER,
+              tags TEXT,
+              FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+              UNIQUE (image_id)
+          );`);
+      // this.db.run("DROP TABLE IF EXISTS imgurAccessTokens");
+      this.db
+        .run(`CREATE TABLE IF NOT EXISTS imgurAccessTokens (                 
+            user_id INTEGER,
+            token TEXT,
+            UNIQUE(user_id, token)
+        );`);
     });
   }
 
@@ -344,6 +364,29 @@ class DataBase {
     });
   }
 
+  async retainImgurImages(imageIds) {
+    const selectImgurImagesSql = `
+      SELECT image_id FROM imgurImages WHERE image_id IN (${imageIds
+        .map(() => "?")
+        .join(", ")})
+    `;
+
+    return await new Promise((resolve, reject) => {
+      this.db.all(selectImgurImagesSql, imageIds, (err, rows) => {
+        if (err) {
+          console.error(
+            "Error retrieving imgurImages from imgurImages table:",
+            err.message
+          );
+          resolve(null);
+        } else {
+          const validImageIds = rows.map((row) => row.image_id);
+          resolve(validImageIds);
+        }
+      });
+    });
+  }
+
   async getImgurImageByUrl(url) {
     const selectImageSql = `
       SELECT image_id FROM imgurImages WHERE url = ?
@@ -373,6 +416,103 @@ class DataBase {
           resolve(null);
         } else {
           resolve(row);
+        }
+      });
+    });
+  }
+
+  async storeImgurMetaData(imageId, meta) {
+    return await new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        const insertStmt = this.db.prepare(
+          "INSERT INTO imgurMeta (image_id, title, description, views, ups, downs, tags) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        insertStmt.run(
+          imageId,
+          meta.title,
+          meta.description,
+          meta.views,
+          meta.ups,
+          meta.downs,
+          [...meta.tags].map((tag) => tag.name).join(" "),
+          (err) => {
+            if (err) {
+              console.log("error storing imgur meta: " + err);
+              resolve(false);
+            } else resolve(true);
+          }
+        );
+        insertStmt.finalize();
+      });
+    });
+  }
+
+  async getImgurMetaData(imageId) {
+    const sql = "SELECT * FROM imgurMeta WHERE image_id = ?";
+    return await new Promise((resolve, reject) => {
+      this.db.get(sql, imageId, (err, row) => {
+        if (err) {
+          console.error(
+            "SELECT * FROM imgurMeta WHERE image_id = ?:",
+            err.message
+          );
+          resolve(null);
+        } else if (row) {
+          resolve(row);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  async getUserEdits(userId, imageType) {
+    const sql = `
+      SELECT images.*
+      FROM images
+      JOIN userImages ON images.id = userImages.image_id
+      WHERE userImages.user_id = ? AND images.type = ?;
+    `;
+    return await new Promise((resolve, reject) => {
+      this.db.all(sql, [userId, imageType], (err, rows) => {
+        if (err) {
+          console.error("Error:", err.message);
+          resolve(null);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
+  async getUserImgurAccessToken(userId) {
+    const sql = `
+      SELECT token FROM imgurAccessTokens where user_id = ?
+    `;
+    return await new Promise((resolve, reject) => {
+      this.db.get(sql, [userId], (err, rows) => {
+        if (err) {
+          console.error("Error:", err.message);
+          resolve(null);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
+  async insertImgurAccessToken(userId, token) {
+    const sql = `
+      INSERT INTO imgurAccessTokens (user_id, token)
+      VALUES (?, ?)
+    `;
+    return await new Promise((resolve, reject) => {
+      this.db.run(sql, [userId, token], function (err) {
+        if (err) {
+          console.error("Error:", err.message);
+          resolve(null);
+        } else {
+          resolve({ userId, token, id: this.lastID });
         }
       });
     });
