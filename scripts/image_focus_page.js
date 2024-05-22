@@ -1,9 +1,5 @@
 import { clientId } from "./server_location.js";
 
-function getQueryParameter(name) {
-  return JSON.parse(decodeURIComponent(urlParams.get(name)));
-}
-
 const queryParams = Object.fromEntries(
   new URLSearchParams(window.location.search).entries()
 );
@@ -132,9 +128,10 @@ commentsButton.addEventListener("click", async (event) => {
     // Append the comment div to the specified parent element
     parent.appendChild(commentDiv);
 
-    commentInfo.children.forEach((child) => {
-      addComment(child, commentDiv);
-    });
+    if (commentInfo.child)
+      commentInfo.children.forEach((child) => {
+        addComment(child, commentDiv);
+      });
   }
   commentsSection.innerHTML = "<h2>Comments</h2>";
 
@@ -179,8 +176,6 @@ imgurUploadForm.addEventListener("submit", async (event) => {
       headers: { sessionid: localStorage.getItem("sessionId") },
     });
 
-    alert("Image successfully uploaded to your account!");
-
     let cause = (await response.json()).cause;
 
     if (cause == "accessToken") {
@@ -194,6 +189,8 @@ imgurUploadForm.addEventListener("submit", async (event) => {
           "_blank"
         );
       }
+    } else {
+      alert("Image successfully uploaded to your account!");
     }
   }
 });

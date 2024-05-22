@@ -29,3 +29,33 @@ userImages (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(user_id,image_id)
 )
+
+-- Table for main comments
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    author TEXT NOT NULL,
+    text TEXT NOT NULL
+);
+
+-- Table for root comments linking comments to images
+CREATE TABLE comment_roots (
+    id INTEGER PRIMARY KEY,  -- id as PRIMARY KEY to ensure uniqueness
+    image_id INTEGER NOT NULL,
+    FOREIGN KEY (id) REFERENCES comments(id) ON DELETE CASCADE,
+    FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+);
+
+-- Table for hierarchical relationships between comments
+CREATE TABLE comment_hierarchy (
+    parent_id INTEGER NOT NULL,
+    child_id INTEGER NOT NULL,
+    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE,
+    FOREIGN KEY (child_id) REFERENCES comments(id) ON DELETE CASCADE,
+    PRIMARY KEY (parent_id, child_id)  -- Ensure unique parent-child pairs
+);
+
+
+
+
+
+ 

@@ -82,7 +82,7 @@ body {
   position: relative;
 }
 .image-container {
-  overflow: hidden;
+  /* overflow: hidden; */
   position: relative;
   display: flex;
   flex-direction: column; 

@@ -9,7 +9,7 @@ let sessionId = await sessionManager.getSessionId();
 let nickname = localStorage.getItem("nickName");
 
 console.log(nickname, sessionId);
-if (nickname == null || sessionId == null) {
+if (nickname == null || sessionId == null) {  
   let authResponse = await sessionManager.sendSessionId(sessionId);
   console.log(authResponse);
 

@@ -13,9 +13,7 @@ import {
 import axios from "axios";
 import fs from "fs";
 import { clientId } from "./server/imgur-credentials.js";
-import { allowedNodeEnvironmentFlags, config } from "process";
-import { DESTRUCTION } from "dns";
-// import { Database } from "sqlite3";
+// import jwt from "jsonwebtoken"; 
 
 const accessToken = "42c4f1fc4b77765844a5ff3f8d78c77acecb8414";
 
@@ -82,7 +80,7 @@ const server = createServer(async (req, res) => {
     serveFile(res, filePath);
   } else if (pathComponents[0] == "imgurAccessToken") {
     serveFile(res, "imgurAccessToken.html");
-  } else if (pathComponents[0] == "storeImgurAccessToken") {
+  }  else if (pathComponents[0] == "storeImgurAccessToken") {
     storeImgurAccessToken(req, res);
   } else if (pathComponents[0] == "uploadImage") {
     uploadImage(req, res);
@@ -118,14 +116,21 @@ server.listen(PORT, () => {
 
 function getBodyFromRequest(req) {
   return new Promise((resolve, reject) => {
+    /*    if (req.headers["content-type"] !== "application/json") {
+      reject(new Error("Invalid content type. Expected application/json."));
+      return;
+    } */
+
     let data = "";
 
     req.on("data", (chunk) => {
       data += chunk.toString();
     });
-
+    console.log("here1");
     req.on("end", () => {
       try {
+        console.log("here2");
+        console.log("Trying to parse: " + data);
         const body = JSON.parse(data);
         resolve(body);
       } catch (error) {
@@ -180,21 +185,21 @@ async function loginRoute(req, res) {
         console.log("invalid username " + body.username);
       }
     } else {
-      let userData = await dataBase.getUserByname(body.username);
+      let userData = await dataBase.getUserByName(body.username);
 
       if (userData) {
         response.signupresult = "username taken";
       } else {
         dataBase.addUser(body.username, body.password);
-        let user = await dataBase.getUserByname(body.username);
+        let user = await dataBase.getUserByName(body.username);
 
         response.signupresult = "success";
         const newSessionId = await generateSessionId();
         console.log(newSessionId);
 
-        await dataBase.setSessionId(user.getId, newSessionId);
+        await dataBase.setSessionId(user.getId(), newSessionId);
 
-        console.log(await dataBase.getSessionIdByUserId(user.getId));
+        console.log(await dataBase.getSessionIdByUserId(user.getId()));
 
         response.sessionId = newSessionId;
       }
@@ -383,6 +388,26 @@ async function checkSessionId(req, res) {
 // testing function
 (async () => {
   console.log(await dataBase.getImages());
+
+  /* const postData = {
+    username: "Maxim",
+  };
+
+  axios
+    .post("http://192.168.0.198:3000/JWT", postData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    .then((response) => {
+      console.log("Response:", response.data);
+    })
+    .catch((error) => {
+      console.error(
+        "Error:",
+        error.response ? error.response.data : error.message
+      );
+    }); */
 
   // deleteUserImgurPosts(accessToken, "mmaxim2291");
 
@@ -738,7 +763,7 @@ async function uploadImage(req, res) {
   let userId = await checkSessionId(req, res);
   if (!userId) return;
 
-  let accessToken = (await dataBase.getUserImgurAccessToken(userId)).token;
+  let accessToken = await dataBase.getUserImgurAccessToken(userId);
 
   console.log("token stored: " + accessToken);
 
@@ -891,3 +916,31 @@ async function storeImgurAccessToken(req, res) {
 
   res.end();
 }
+const secretKey = "dasv12mhuvmohi,xuh121cr1";
+
+/* async function jwtRoute(req, res) {
+  console.log("JWTROUTE, getting body");
+  let body = await getBodyFromRequest(req);
+  let username = body.username;
+  console.log(username);
+
+  let userId = await dataBase.getUserIdByUsername(username);
+
+  if (userId) {
+    const token = jwt.sign({ userId }, secretKey, {
+      expiresIn: "10d",
+    });
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ token }));
+  } else {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "Invalid username",
+      })
+    );
+  }
+}
+ */

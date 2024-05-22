@@ -4,6 +4,10 @@ import {
   AnnotationMemento,
 } from "../scripts/PhotoEditor.js";
 
+const queryParams = Object.fromEntries(
+  new URLSearchParams(window.location.search).entries()
+);
+
 const mobileWidthProportion = 0.8;
 const desktopWidthProportion = 0.6;
 let widthProportion;
@@ -15,7 +19,7 @@ let imageContainer = document.getElementById("imageContainer");
 
 let imageSrc = "../resources/th.jpg";
 
-let urlImgSrc = getImageFromUrl();
+let urlImgSrc = queryParams.focusedImage;
 
 if (urlImgSrc) imageSrc = urlImgSrc;
 
@@ -67,7 +71,6 @@ mainImage.onload = async function () {
       imageContainer.offsetHeight * 0.5
     }px`; */
     updateRectangle();
-
   });
 };
 
@@ -234,7 +237,7 @@ function downloadImage(image) {
   downloadLink.download = "cropped_image.jpg";
   downloadLink.click();
 }
- 
+
 function addFormListeners() {
   document
     .getElementById("applyFilterBtn")
@@ -342,16 +345,7 @@ function uploadImage() {
 }
 
 function getImageFromUrl() {
-  const queryString = window.location.search;
-
-  const urlParams = new URLSearchParams(queryString);
-
-  const encodedData = urlParams.get("focusedImage");
-  if (encodedData) {
-    return JSON.parse(decodeURIComponent(encodedData));
-  }
-
-  return null;
+  return;
 }
 
 function setWidthPropotion() {
