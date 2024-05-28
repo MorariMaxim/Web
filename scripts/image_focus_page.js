@@ -1,4 +1,6 @@
-import { clientId } from "./server_location.js";
+import { imgurApplicationClientId } from "./server_location.js";
+
+let imageDetails;
 
 const queryParams = Object.fromEntries(
   new URLSearchParams(window.location.search).entries()
@@ -27,6 +29,7 @@ if (match) {
 if (foreign) {
   editButton.style.display = "none";
   uploadImgurButton.style.display = "none";
+  changeMetaButton.style.display = "none";
 }
 
 if (focusedImage) {
@@ -128,19 +131,33 @@ commentsButton.addEventListener("click", async (event) => {
     // Append the comment div to the specified parent element
     parent.appendChild(commentDiv);
 
-    if (commentInfo.child)
-      commentInfo.children.forEach((child) => {
-        addComment(child, commentDiv);
-      });
+    console.log("commentInfo :>> ", commentInfo);
+
+    commentInfo.children.forEach((child) => {
+      addComment(child, commentDiv);
+    });
   }
   commentsSection.innerHTML = "<h2>Comments</h2>";
 
   if (response.ok) {
     let postData = await response.json();
 
-    [...postData.comments].forEach((comment) => {
-      addComment(comment, document.getElementById("commentsSection"));
-    });
+    console.log("postData :>> ", postData);
+
+    if (postData.comments)
+      [...postData.comments].forEach((comment) => {
+        addComment(comment, document.getElementById("commentsSection"));
+      });
+
+    {
+      imageDetails = postData.details;
+
+      if (imageDetails.title)
+        document.getElementById("changeMetaTitle").value = imageDetails.title;
+
+      if (imageDetails.tags)
+        document.getElementById("changeMetaTags").value = imageDetails.tags;
+    }
 
     addImageDetails(postData.details);
   } else alert("Nothing for this image");
@@ -150,6 +167,40 @@ uploadImgurButton.addEventListener("click", async (event) => {
   document
     .getElementById("imgurUploadFormContainer")
     .classList.toggle("hidden");
+});
+
+changeMetaButton.addEventListener("click", async (event) => {
+  document.getElementById("changeMetaFormContainer").classList.toggle("hidden");
+});
+
+changeMetaForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  let title = document.getElementById("changeMetaTitle").value.trim();
+
+  let tags = document.getElementById("changeMetaTags").value.trim();
+
+  tags = tags.split(",").filter((tag) => tag.length > 0);
+
+  let agree = window.confirm(
+    `Parsed changes: title = ${title}, tags = ${JSON.stringify(tags)}`
+  );
+
+  if (agree) {
+    const response = await fetch(`/changeImageMeta?${queryParams.toString()}`, {
+      method: "put",
+      headers: { sessionid: localStorage.getItem("sessionId") },
+      body: JSON.stringify({ meta: { tags, title }, id: imageId }),
+    });
+
+    let cause = (await response.json()).cause;
+
+    if (cause == "accessToken") {
+      alert("error!");
+    } else {
+      alert("Meta data successfully updated!");
+    }
+  }
 });
 
 imgurUploadForm.addEventListener("submit", async (event) => {
@@ -182,10 +233,10 @@ imgurUploadForm.addEventListener("submit", async (event) => {
       let agree = window.confirm(
         "We need your permission to upload an image to your account."
       );
-
+      console.log("agree :>> ", agree);
       if (agree) {
         window.open(
-          `https://api.imgur.com/oauth2/authorize?client_id=${clientId}&response_type=token&state=some_random_state`,
+          `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
           "_blank"
         );
       }

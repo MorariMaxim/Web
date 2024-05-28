@@ -1,5 +1,5 @@
 import { redirectTo } from "./common.js";
-import { serverIp } from "./server_location.js";
+import { serverIp, imgurApplicationClientId } from "./server_location.js";
 
 let bar = document.getElementById("filter-phact-menu");
 
@@ -80,7 +80,7 @@ export const focusImage = () => {
   if (selectAlls.length == 0) {
     alert("No image selected");
   } else {
-    redirectTo("../mainPages/image_focus_page.html", {
+    redirectTo("/image_focus_page.html", {
       focusedImage: selectAlls[0].src,
       postId: selectAlls[0].getAttribute("postId"),
       type: selectAlls[0].getAttribute("type"),
@@ -100,7 +100,7 @@ function editImages() {
   if (images.length == 0) alert("No images selected");
   else {
     // console.log('images.map(image => image.src) :>> ', images.map(image => image.src));
-    redirectTo("mainPages/photo_editor.html", {
+    redirectTo("/photo_editor.html", {
       project_images: images.map((image) => image.src),
     });
   }
@@ -164,6 +164,10 @@ filterButton.addEventListener("click", async () => {
   else if (value == "Local Imgur") searchLocalImgurRequest();
 });
 
+fetchNewImgurUserButton.addEventListener("click", async () => {
+  requestRemoteImgurUserImages();
+});
+
 fetchEdits.addEventListener("click", async () => {
   requestUserEdits();
 });
@@ -177,15 +181,18 @@ async function downloadFromImgurRequest() {
     sessionId: localStorage.getItem("sessionId"),
   };
 
+  let options = {};
   if (imgurSection.value != "none") {
-    queryParams.append("section", "valueimgurSection.value");
+    options.section = imgurSection.value;
   }
   if (imgurSort.value != "none") {
-    queryParams.append("sort", "imgurSort.value");
+    options.sort = imgurSort.value;
   }
   if (imgurWindow.value != "none") {
-    queryParams.append("window", "imgurWindow.value");
+    options.window = imgurWindow.value;
   }
+
+  options.page = imgurPageInput.value;
 
   let title = imgurTitle.value.trim();
 
@@ -195,11 +202,13 @@ async function downloadFromImgurRequest() {
     alert(
       "Can't search using title and tags at the same time, it defaults to tags"
     );
+
   if (tags != "") {
-    queryParams.append("q", tags);
+    options.q = tags;
   } else if (title != "") {
-    queryParams.append("q", `title: ${title}`);
+    options.q = `title: ${title}`;
   }
+  queryParams.append("options", JSON.stringify(options));
 
   const response = await fetch(`/searchImages?${queryParams.toString()}`, {
     method: "get",
@@ -219,9 +228,9 @@ async function searchLocalImgurRequest() {
     "Content-Type": "application/json",
     sessionId: localStorage.getItem("sessionId"),
   };
-  let titleFilter = localImgurTitle.value;
+  let titleFilter = localImgurTitle.value.trim();
 
-  let kwordsFilter = localImgurKeywords.value;
+  let kwordsFilter = localImgurKeywords.value.trim();
 
   let queryParams = new URLSearchParams({
     title: titleFilter,
@@ -367,4 +376,39 @@ function mapIdsToUrls(ids) {
   });
 
   return ids;
+}
+
+async function requestRemoteImgurUserImages() {
+  let headers = {
+    "Content-Type": "application/json",
+    sessionId: localStorage.getItem("sessionId"),
+  };
+
+  let queryParams = new URLSearchParams({
+    type: "RemoteImgurUserImages",
+  });
+
+  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
+    method: "get",
+    headers,
+  });
+
+  let ids = await response.json();
+
+  if (ids.cause) {
+    let agree = window.confirm(
+      "We need your permission to get images from your account."
+    );
+    console.log("agree :>> ", agree);
+    if (agree) {
+      window.open(
+        `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
+        "_blank"
+      );
+    }
+  }
+
+  console.log("ids :>> ", ids);
+
+  fillGallery(ids);
 }

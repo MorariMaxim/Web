@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const menuButton = document.getElementById('menuButton');
+    const projectImagesButton = document.getElementById('projectImagesButton');
     const menu = document.getElementById('menu');
 
-    menuButton.addEventListener('click', function() {
+    projectImagesButton.addEventListener('click', function() {
         if (menu.style.display === 'flex') {
             menu.style.display = 'none';
         } else {

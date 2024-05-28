@@ -77,8 +77,8 @@ class DataBase {
       await this.run("drop table if exists tags");
       await this.run(dropImagesTable);
       await this.run("drop table if exists comments");
-      // await this.run(dropSessionsTable);
-      // await this.run(dropUsersTable);
+      await this.run(dropSessionsTable);
+      await this.run(dropUsersTable);
 
       console.log("All tables dropped successfully.");
 
@@ -94,7 +94,8 @@ class DataBase {
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        email TEXT 
       );
     `;
 
@@ -152,6 +153,7 @@ class DataBase {
       CREATE TABLE IF NOT EXISTS imgurAccessTokens (
         user_id INTEGER NOT NULL,
         token TEXT NOT NULL,
+        account_username TEXT NOT NULL,
         UNIQUE(user_id, token)
       );
     `;
@@ -526,6 +528,21 @@ class DataBase {
     }
   }
 
+  async updateImageMetaData(imageId, meta) {
+    const sql = `
+        SELECT * FROM update_image_meta_data($1, $2, $3);
+    `;
+    try {
+      const client = await this.pool.connect();
+      await client.query(sql, [imageId, meta.title, meta.tags]);
+      client.release();
+      return true;
+    } catch (err) {
+      console.error("Error updating image meta:", err.message);
+      return false;
+    }
+  }
+
   async createCommentRoots(imageId, comments) {
     const sql = `
         SELECT create_comment_roots($1::jsonb, $2);
@@ -570,13 +587,9 @@ class DataBase {
   }
 
   async storeImgurMetaAndComments(id, meta) {
-    meta.details.tags = meta.details.tags.map((tag) => tag.name);
+    console.log("storeImgurMetaAndComments: " + JSON.stringify(meta)); 
 
-    console.log(
-      `tags look like: ${JSON.stringify(
-        meta.details.tags.map((tag) => tag.name)
-      )}`
-    );
+    console.log(`tags look like: ${JSON.stringify(meta.details.tags)}`);
     let storedMeta = await dataBase.storeImgurMetaDataToDB(id, meta.details);
 
     let storedComments = await dataBase.createCommentRoots(id, meta.comments);
@@ -603,26 +616,32 @@ class DataBase {
   }
 
   async getUserImgurAccessToken(userId) {
-    const sql = "SELECT token FROM imgurAccessTokens WHERE user_id = $1";
+    const sql = "SELECT * FROM imgurAccessTokens WHERE user_id = $1";
     try {
       const client = await this.pool.connect();
       const result = await client.query(sql, [userId]);
       client.release();
-      return result.rows.length > 0 ? result.rows[0].token : null;
+      console.log("getUserImgurAccessToken: " + JSON.stringify(result.rows[0]));
+      return result.rows.length > 0
+        ? {
+            token: result.rows[0].token,
+            account_username: result.rows[0].account_username,
+          }
+        : null;
     } catch (err) {
       console.error("Error retrieving imgur access token:", err.message);
       return null;
     }
   }
 
-  async insertImgurAccessToken(userId, token) {
+  async insertImgurAccessToken(userId, token, account_username) {
     const sql = `
-        INSERT INTO imgurAccessTokens (user_id, token)
-        VALUES ($1, $2)
+        INSERT INTO imgurAccessTokens (user_id, token,account_username )
+        VALUES ($1, $2, $3)
     `;
     try {
       const client = await this.pool.connect();
-      await client.query(sql, [userId, token]);
+      await client.query(sql, [userId, token, account_username]);
       client.release();
       return { userId, token };
     } catch (err) {
@@ -632,10 +651,12 @@ class DataBase {
   }
 
   async filterIds(ids, tags, type, title) {
-    return (await this.executeFunction(
-      "SELECT filter_ids($1, $2, $3, $4) AS filtered_ids",
-      [ids, tags, type, title]
-    ))[0].filtered_ids;
+    return (
+      await this.executeFunction(
+        "SELECT filter_ids($1, $2, $3, $4) AS filtered_ids",
+        [ids, tags, type, title]
+      )
+    )[0].filtered_ids;
   }
 }
 

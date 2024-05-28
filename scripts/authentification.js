@@ -49,8 +49,16 @@ class SessionManager {
       });
 
       if (response.ok) {
-        const responseBody = await response.json(); 
-        return responseBody;
+        const responseBody = await response.json();
+
+        if (responseBody.validSessionId == "false") {
+          localStorage.removeItem("sessionId");
+          localStorage.removeItem("nickName");
+          return false;
+        } else {
+          localStorage.setItem("nickName", responseBody.username);
+          return true;
+        }
       } else {
         console.error("Error:", response.statusText);
       }
@@ -58,7 +66,7 @@ class SessionManager {
       console.error("Error:", error);
     }
 
-    return null;
+    return false;
   }
 }
 

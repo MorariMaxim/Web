@@ -34,13 +34,54 @@
             <label for="title">Title:</label>
             <input type="text" id="title" name="title" required />
 
-            <button id="uploadImgurSubmit" class="nice-button2 focused-image-buttons" style="width: 20%;">Submit</button>
+            <button
+              id="uploadImgurSubmit"
+              class="nice-button2 focused-image-buttons"
+              style="width: 20%"
+            >
+              Submit
+            </button>
           </form>
         </div>
 
         <div class="image-details">
           <h2>Image Details</h2>
           <ul class="bolder-text" id="imageDetailList"></ul>
+        </div>
+
+        <button
+          class="nice-button2 focused-image-buttons"
+          id="changeMetaButton"
+        >
+          Change Details
+        </button>
+
+        <div id="changeMetaFormContainer" class="hidden">
+          <form id="changeMetaForm">
+            <label for="changeMetaTitle">Title:</label>
+            <input
+              type="text"
+              id="changeMetaTitle"
+              name="changeMetaTitle"
+              required
+            />
+
+            <label for="changeMetaTags">Tags:</label>
+            <input
+              type="text"
+              id="changeMetaTags"
+              name="changeMetaTags"
+              required
+            />
+
+            <button
+              id="changeMetaSubmit"
+              class="nice-button2 focused-image-buttons"
+              style="width: 20%"
+            >
+              Submit
+            </button>
+          </form>
         </div>
       </div>
 
@@ -49,9 +90,7 @@
       </div>
     </main>
   </body>
- 
 
   <script type="module" src="../scripts/prepend_header.js"></script>
   <script type="module" src="../scripts/image_focus_page.js"></script>
- 
 </html>

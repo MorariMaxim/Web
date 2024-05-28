@@ -45,7 +45,7 @@ body * {
 .edit-row {
   flex-flow: row;
   display: flex;
-  column-gap: 50px;
+  column-gap: 15px;
 
   justify-content: center;
 }
@@ -74,6 +74,14 @@ body * {
   font-size: 16px;
 }
 
+input {
+  width: 70px;
+}
+
+#upload-input {
+  width: auto;
+}
+
 h2 {
   margin-top: 0;
 }
@@ -85,7 +93,7 @@ body {
   /* overflow: hidden; */
   position: relative;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
 }
 .handler {
   position: absolute;
@@ -152,15 +160,12 @@ input[type="submit"] {
   }
 }
 
-
-
-
 /* for menu */
- 
-.menu-button {
+
+.projectImagesButton {
   position: fixed;
-  right:10px;
-  top:100px;
+  right: 10px;
+  top: 100px;
   z-index: 1000;
   background-color: #333;
   color: white;
@@ -171,19 +176,18 @@ input[type="submit"] {
   border-radius: 5px;
 }
 
-.menu { 
+.projectImages {
   width: 50vh;
-  height: 80vh; 
-  display: none;  
-  position: absolute; 
-  
+  height: 80vh;
+  display: none;
+  position: absolute;
+
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
-  z-index: 999; 
+  z-index: 999;
 }
- 
 
 .gallery-item {
   position: relative;
@@ -202,17 +206,14 @@ input[type="submit"] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-gap: 20px;
-  padding: 20px 20px 20px 20px; 
-  align-items: center; 
- 
+  padding: 20px 20px 20px 20px;
+  align-items: center;
 }
 
 @media screen and (min-width: 600px) {
   .gallery {
-    grid-gap: 50px; 
+    grid-gap: 50px;
   }
-
-  
 }
 
 #gallery-wrapper {

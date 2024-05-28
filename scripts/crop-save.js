@@ -32,14 +32,14 @@ let hoverImage = true;
 
 let imageContainer = document.getElementById("imageContainer");
 
-let imageSrc = "../resources/th.jpg";
+let canvasBase;
 
 let urlImgSrc = queryParams.focusedImage;
 
-if (urlImgSrc) imageSrc = urlImgSrc;
+if (urlImgSrc) canvasBase = await drawableImage(urlImgSrc);
+else canvasBase = coloredCanvas(4, 3, "lightgray");
 
 let mainCanvas = document.getElementById("mainCanvas");
-let ctx = mainCanvas.getContext("2d");
 
 const photoEditor = new PhotoEditor(
   mainCanvas,
@@ -47,48 +47,28 @@ const photoEditor = new PhotoEditor(
   document.body.clientWidth * widthProportion
 );
 
-const mainImage = new Image();
-mainImage.src = imageSrc;
-
 let cropX, cropY, cropWidth, cropHeight;
 
 addFormListeners();
 
-mainImage.onload = async function () {
-  photoEditor.setImage(mainImage);
+photoEditor.setUndistortedImage(canvasBase);
+photoEditor.draw();
+
+makeDraggable(document.getElementById("handler1"));
+makeDraggable(document.getElementById("handler2"));
+
+updateRectangle();
+
+document.getElementById("saveButton").onclick = saveCropArea;
+
+window.addEventListener("resize", function () {
+  setWidthPropotion();
+
+  photoEditor.setCanvasSize(document.body.clientWidth * widthProportion);
   photoEditor.draw();
 
-  makeDraggable(document.getElementById("handler1"));
-  makeDraggable(document.getElementById("handler2"));
-
   updateRectangle();
-
-  document.getElementById("saveButton").onclick = saveCropArea;
-
-  window.addEventListener("resize", function () {
-    setWidthPropotion();
-
-    photoEditor.setCanvasSize(document.body.clientWidth * widthProportion);
-    photoEditor.draw();
-
-    /* document.getElementById("handler1").style.top = `${
-      imageContainer.offsetWidth * 0.1
-    }px`;
-
-    document.getElementById("handler1").style.left = `${
-      imageContainer.offsetHeight * 0.1
-    }px`;
-
-    document.getElementById("handler2").style.top = `${
-      imageContainer.offsetWidth * 0.5
-    }px`;
-
-    document.getElementById("handler2").style.left = `${
-      imageContainer.offsetHeight * 0.5
-    }px`; */
-    updateRectangle();
-  });
-};
+});
 
 function makeDraggable(element) {
   let differenceX = 0,
@@ -335,16 +315,6 @@ function addFormListeners() {
           cropWidth
         )
       );
-      /* let ctx = photoEditor.canvas.getContext("2d");
-      console.log(image);
-      console.log(photoEditor.displayedImage);
-      ctx.drawImage(
-        image,
-        0,
-        0,
-        photoEditor.canvas.width/2,
-        photoEditor.canvas.height/2
-      ); */
     });
 
   document.getElementById("undoButton").addEventListener("click", (event) => {
@@ -383,6 +353,64 @@ function addFormListeners() {
       updateRectangle();
     });
   document.getElementById("showOptions").value = "selected image";
+
+  document
+    .getElementById("changeCanvasBase")
+    .addEventListener("click", async () => {
+      try {
+        let image = await drawableImage(selectedImage());
+        photoEditor.setUndistortedImage(image);
+        photoEditor.draw();
+      } catch (e) {
+        document.getElementById("projectImagesButton").click();
+      }
+    });
+
+  document
+    .getElementById("resizeCanvas")
+    .addEventListener("click", async () => {
+      let ok = window.confirm(
+        "This action fill clear the canvas and resize it with the given wdith and height proportion"
+      );
+
+      if (ok) {
+        photoEditor.setUndistortedImage(
+          coloredCanvas(widthInput.value, heightInput.value, canvasColor.value)
+        );
+        photoEditor.draw();
+      }
+    });
+
+  document
+    .getElementById("fillSelectedImageButton")
+    .addEventListener("click", async () => {
+      try {
+        let image = await drawableImage(selectedImage());
+        image.width = 100;
+        image.height = 100;
+        photoEditor.setImage(image);
+        photoEditor.draw();
+      } catch (e) {
+        document.getElementById("projectImagesButton").click();
+      }
+    });
+}
+
+function coloredCanvas(width, height, color) {
+  const canvas = document.createElement("canvas");
+
+  // Set the height and width of the canvas
+  canvas.height = height;
+  canvas.width = width;
+  const context = canvas.getContext("2d");
+
+  // Set the fill color
+  context.fillStyle = color;
+
+  // Fill the entire canvas with the color
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  return canvas;
 }
 
 function getTextInputValues() {
@@ -407,7 +435,7 @@ function uploadImage() {
     let img = document.createElement("img");
 
     img.onload = () => {
-      photoEditor.setImage(img);
+      photoEditor.setUndistortedImage(img);
       photoEditor.draw();
     };
 
@@ -454,3 +482,43 @@ function selectedImage() {
 
 let image = document.querySelectorAll(".gallery-item img")[0];
 if (image) image.classList.add("selected-image");
+
+/* menu button */
+
+document.addEventListener("DOMContentLoaded", function () {
+  const projectImagesButton = document.getElementById("projectImagesButton");
+  const menu = document.getElementById("projectImages");
+
+  projectImagesButton.addEventListener("click", function () {
+    if (menu.style.display === "flex") {
+      menu.style.display = "none";
+    } else {
+      menu.style.display = "flex";
+      menu.style.flexDirection = "column";
+      menu.style.justifyContent = "center";
+      menu.style.alignItems = "center";
+    }
+  });
+});
+
+function fillGallery(images) {
+  let gallery = document.getElementById("gallery");
+  images.forEach((image) => {
+    const galleryItem = document.createElement("div");
+    galleryItem.classList.add("gallery-item");
+
+    const imgElement = document.createElement("img");
+
+    imgElement.src = image;
+
+    galleryItem.appendChild(imgElement);
+
+    gallery.appendChild(galleryItem);
+  });
+
+  makeImagesSelectable();
+}
+
+if (queryParams.project_images) {
+  fillGallery(queryParams.project_images.split(","));
+}

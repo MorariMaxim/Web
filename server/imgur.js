@@ -1,7 +1,8 @@
 import axios from "axios";
-import { clientId } from "./imgur-credentials.js";
+import { imgurApplicationClientId } from "./imgur-credentials.js";
 
 export async function fetchImgurImages(options = {}) {
+  console.log("fetchImgurImages: " + JSON.stringify(options));
   console.log({
     page: 0, //to get more you'd set page: current_page+1
     ...options,
@@ -17,7 +18,7 @@ export async function fetchImgurImages(options = {}) {
           // q: "title: dog AND cat",
         },
         headers: {
-          Authorization: `Client-ID ${clientId}`,
+          Authorization: `Client-ID ${imgurApplicationClientId}`,
         },
       }
     );
@@ -61,13 +62,13 @@ export function getImgLinksFromImgurAlbums(data) {
   return imgLinks;
 }
 
-export async function fetchCommentsForPost(postId, clientId) {
+export async function fetchCommentsForPost(postId, imgurApplicationClientId) {
   try {
     const response = await axios.get(
       `https://api.imgur.com/3/gallery/${postId}/comments`,
       {
         headers: {
-          Authorization: `Client-ID ${clientId}`,
+          Authorization: `Client-ID ${imgurApplicationClientId}`,
         },
       }
     );
@@ -80,13 +81,13 @@ export async function fetchCommentsForPost(postId, clientId) {
   }
 }
 
-export async function fetchPostInfo(postId, clientId) {
+export async function fetchPostInfo(postId, imgurApplicationClientId) {
   try {
     const response = await axios.get(
       `https://api.imgur.com/3/gallery/${postId}`,
       {
         headers: {
-          Authorization: `Client-ID ${clientId}`,
+          Authorization: `Client-ID ${imgurApplicationClientId}`,
         },
       }
     );
@@ -95,6 +96,26 @@ export async function fetchPostInfo(postId, clientId) {
 
     return commentData;
   } catch (error) {
+    return [];
+  }
+}
+
+export async function fetchPostsFromImgur(username, accessToken) {
+  try {
+    const response = await axios.get(
+      `https://api.imgur.com/3/account/${username}/submissions`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const postData = response.data.data;
+
+    return getImgLinksFromImgurAlbums(postData);
+  } catch (error) {
+    console.log(error);
     return [];
   }
 }

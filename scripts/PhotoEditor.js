@@ -5,12 +5,19 @@ class PhotoEditor {
   annotations = [];
   filters = [];
   images = [];
-  width = 300;
+  width = 1;
+  height = 1;
 
   constructor(canvas, imageContainer, width) {
     this.canvas = canvas;
     this.width = width;
     this.imageContainer = imageContainer;
+  }
+
+  clear() {
+    this.mementos = [];
+    this.annotations = [];
+    this.filters = [];
   }
 
   apply(memento) {
@@ -26,10 +33,19 @@ class PhotoEditor {
       (this.displayedImage.height / this.displayedImage.width) * this.width;
   }
 
-  setImage(image) {
+  setUndistortedImage(image) {
     this.displayedImage = image;
 
+    console.log("image.height :>> ", image.height);
+    console.log("image.width :>> ", image.width);
+
+    console.log(this.displayedImage);
+
     this.setCanvasSize(this.width);
+  }
+
+  setImage(image) {
+    this.displayedImage = image;
   }
 
   addImage(image) {
@@ -188,7 +204,7 @@ class ImageMemento extends Memento {
 
   apply() {
     this.photoEditor.images.push({
-      data : this.data,
+      data: this.data,
       width: this.width,
       height: this.height,
       top: this.top,
@@ -202,21 +218,3 @@ class ImageMemento extends Memento {
 }
 
 export { PhotoEditor, Memento, FilterMemento, AnnotationMemento, ImageMemento };
-
-/* menu button */
-
-document.addEventListener("DOMContentLoaded", function () {
-  const menuButton = document.getElementById("menuButton");
-  const menu = document.getElementById("menu");
-
-  menuButton.addEventListener("click", function () {
-    if (menu.style.display === "flex") {
-      menu.style.display = "none";
-    } else {
-      menu.style.display = "flex";
-      menu.style.flexDirection = "column";
-      menu.style.justifyContent = "center";
-      menu.style.alignItems = "center";
-    }
-  });
-});

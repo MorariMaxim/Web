@@ -3,34 +3,20 @@ import { logged_header, unlogged_header } from "../resources/headers.js";
 
 // await sessionManager.removeSessionId();
 
-let logged = false;
+let sessionId = localStorage.getItem("sessionId");
 
-let sessionId = await sessionManager.getSessionId();
-let nickname = localStorage.getItem("nickName");
+console.log('sessionId :>> ', sessionId);
 
-console.log(nickname, sessionId);
-if (nickname == null || sessionId == null) {  
-  let authResponse = await sessionManager.sendSessionId(sessionId);
-  console.log(authResponse);
+let logged = sessionId ? await sessionManager.sendSessionId(sessionId) : false;
 
-  if (authResponse && authResponse.validSessionId == "true") {
-    logged = true;
-
-    localStorage.setItem("nickName", authResponse.username);
-    localStorage.setItem("nickName", authResponse.username);
-
-    console.log(localStorage.getItem("nickName"));
-  }
-} else {
-  logged = true;
-}
+console.log('logged :>> ', logged);
 
 addHeader(logged);
 
 setUserName();
 
 function addHeader(logged) {
-  console.log(logged); 
+  console.log(logged);
   let header = logged ? logged_header : unlogged_header;
 
   let stylesheet = logged

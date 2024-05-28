@@ -175,7 +175,7 @@
           </ul>
         </div>
         <div class="filter-bar">
-          <!-- filter bar -->
+          <!-- new imgur -->
           <div id="newImgurFBar" class="filterBarVariant" fbarType="New Imgur">
             <div class="stylingBlock">
               <div class="form-group">
@@ -231,6 +231,17 @@
                   <option value="all">all</option>
                 </select>
               </div>
+
+              <div class="form-group">
+                <label for="imgurPageInput">page</label>
+                <input
+                  type="number"
+                  id="imgurPageInput"
+                  name="imgurPageInput"
+                  value="0"
+                  min="0"
+                />
+              </div>
             </div>
           </div>
 
@@ -274,45 +285,20 @@
               <button id="fetchEdits" class="nice-button">Get Edits</button>
             </div>
           </div>
+
+          <div class="filterBarVariant" fbarType="New Imgur">
+            <div class="stylingBlock">
+              <h1>or</h1>
+              <button id="fetchNewImgurUserButton" class="nice-button">
+                My Imgur Images
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div id="gallery-wrapper">
-        <div class="gallery" id="gallery">
-          <div class="gallery-item">
-            <img src="../resources/th.jpg" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="http://localhost:3000/getImage?id=1" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/1373758.png" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/1959-2534-000-000.jpg" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/The_Demon_Seated.jpg" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x400" alt="4" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
-          </div>
-        </div>
+        <div class="gallery" id="gallery"></div>
       </div>
     </main>
 

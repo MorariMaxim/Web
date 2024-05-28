@@ -343,3 +343,46 @@ BEGIN
     RETURN v_filtered_ids;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION update_image_meta_data(
+    p_image_id INTEGER,
+    new_title TEXT,
+    new_tags TEXT[]
+)
+RETURNS VOID AS $$
+DECLARE
+    existing_title_exists BOOLEAN;
+    existing_tags_exist BOOLEAN;
+    tag_name TEXT; -- Declare a variable to hold each tag name
+BEGIN 
+    -- Check if the title already exists
+    SELECT EXISTS(
+        SELECT 1 FROM titles WHERE image_id = p_image_id
+    ) INTO existing_title_exists;
+    
+    -- Check if tags already exist
+    SELECT EXISTS(
+        SELECT 1 FROM tags WHERE image_id = p_image_id
+    ) INTO existing_tags_exist;
+
+    -- Delete existing title if it exists
+    IF existing_title_exists THEN
+        DELETE FROM titles WHERE image_id = p_image_id;
+    END IF;
+    
+    -- Delete existing tags if they exist
+    IF existing_tags_exist THEN
+        DELETE FROM tags WHERE image_id = p_image_id;
+    END IF;
+
+    -- Insert new title
+    INSERT INTO titles (image_id, "text") VALUES (p_image_id, new_title);
+
+    -- Insert new tags
+    FOREACH tag_name IN ARRAY new_tags LOOP
+        INSERT INTO tags (image_id, "name") VALUES (p_image_id, tag_name);
+    END LOOP;
+    
+END;
+$$ LANGUAGE plpgsql;

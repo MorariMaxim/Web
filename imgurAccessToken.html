@@ -15,35 +15,60 @@
         const refreshToken = params.get("refresh_token");
         const expiresIn = params.get("expires_in");
         const tokenType = params.get("token_type");
+        const account_username = params.get("account_username");
+
+        let ok = true;
 
         if (accessToken) {
           document.body.innerHTML = `
-                    <h2>Access Token</h2>
-                    <p>${accessToken}</p>
-                    <h2>Refresh Token</h2>
-                    <p>${refreshToken}</p>
-                    <h2>Expires In</h2>
-                    <p>${expiresIn}</p>
-                    <h2>Token Type</h2>
-                    <p>${tokenType}</p>
-                `;
+            <h2>Access Token</h2>
+            <p>${accessToken}</p>
+            <h2>Refresh Token</h2>
+            <p>${refreshToken}</p>
+            <h2>Expires In</h2>
+            <p>${expiresIn}</p>
+            <h2>Token Type</h2>
+            <p>${tokenType}</p>
+          `;
+
+          try {
+            const response = await fetch("/storeImgurAccessToken", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                sessionId: localStorage.getItem("sessionId"),
+              },
+              body: JSON.stringify({
+                accessToken,
+                refreshToken,
+                expiresIn,
+                tokenType,
+                account_username,
+              }),
+            });
+
+            if (!response.ok) {
+              ok = false;
+              const errorMessage = await response.text();
+              console.error("Error:", errorMessage);
+            }
+          } catch (error) {
+            ok = false;
+            console.error("Fetch error:", error);
+          }
+
+          if (ok) {
+            alert("You can now upload your image to imgur.");
+          } else {
+            alert("Something went wrong while storing the tokens.");
+          }
         } else {
           document.body.innerHTML = "<p>Error: No access token found</p>";
+
+          alert("Something went wrong with the imgur API");
         }
 
-        //storeImgurAccessToken
-
-        const response = await fetch("/storeImgurAccessToken", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            sessionId: localStorage.getItem("sessionId"),
-          },
-
-          body: JSON.stringify({ accessToken,refreshToken,expiresIn,tokenType }),
-        });
-
-        console.log(response);
+        window.close();
       }
 
       window.onload = getAccessTokenFromUrl;

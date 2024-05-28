@@ -12,6 +12,7 @@ container.style.width = initialWidth;
 container.style.height = initialHeight;
 
 container.style.borderRadius = `${parseInt(initialWidth) / 2}px`;
+ 
 
 container.addEventListener("mouseover", function () {
   container.style.width = menuWidth;

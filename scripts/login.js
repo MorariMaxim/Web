@@ -52,12 +52,12 @@ submitButton.addEventListener("click", async (event) => {
     if (response.signupresult == "success") {
       sessionManager.setSessionId(response.sessionId);
       redirectTo("/", null);
-    }
+    } else alert("Sign up failed");
   } else {
     if (response.validCredentials == "true") {
       sessionManager.setSessionId(response.sessionId);
       redirectTo("/", null);
-    }
+    } else alert("Bad credentials");
   }
 });
 

@@ -9,13 +9,11 @@ import {
   fetchImgurImages,
   fetchCommentsForPost,
   fetchPostInfo,
+  fetchPostsFromImgur,
 } from "./server/imgur.js";
 import axios from "axios";
 import fs from "fs";
-import { clientId } from "./server/imgur-credentials.js";
-// import jwt from "jsonwebtoken";
-
-const accessToken = "42c4f1fc4b77765844a5ff3f8d78c77acecb8414";
+import { imgurApplicationClientId } from "./server/imgur-credentials.js";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -84,6 +82,8 @@ const server = createServer(async (req, res) => {
     storeImgurAccessToken(req, res);
   } else if (pathComponents[0] == "uploadImage") {
     uploadImage(req, res);
+  } else if (pathComponents[0] == "changeImageMeta") {
+    changeImageMeta(req, res);
   } else if (pathComponents[0] == "getComments") {
     getComments(req, res);
   } else if (pathComponents[0] == "getImage") {
@@ -126,11 +126,8 @@ function getBodyFromRequest(req) {
     req.on("data", (chunk) => {
       data += chunk.toString();
     });
-    console.log("here1");
     req.on("end", () => {
       try {
-        console.log("here2");
-        console.log("Trying to parse: " + data);
         const body = JSON.parse(data);
         resolve(body);
       } catch (error) {
@@ -152,8 +149,7 @@ async function loginRoute(req, res) {
     console.log("sessionId:", sessionId);
 
     const userId = await dataBase.getUserIdBySessionId(sessionId);
-
-    res.setHeader("validSessionId", "true");
+    console.log("userId :>> ", userId);
 
     if (userId) {
       const userDate = await dataBase.getUserById(userId);
@@ -180,7 +176,8 @@ async function loginRoute(req, res) {
         response.validCredentials = "true";
         response.sessionId = newSessionId;
 
-        dataBase.setSessionId(userId, newSessionId);
+        await dataBase.run(`delete from sessions where user_id = ${userId}`);
+        await dataBase.setSessionId(userId, newSessionId);
       } else {
         console.log("invalid username " + body.username);
       }
@@ -217,25 +214,11 @@ async function searchImagesRoute(req, res) {
   let type = queryParams.type;
 
   console.log(req.url);
-  console.log(queryParams.options);
 
-  let options = {};
+  let options = queryParams.options;
   if (type == "imgurDownload") {
-    if (queryParams.section) {
-      options.section = queryParams.section;
-    }
-    if (queryParams.window) {
-      options.window = queryParams.window;
-    }
-    if (queryParams.sort) {
-      options.sort = queryParams.sort;
-    }
-    if (queryParams.q) {
-      options.q = queryParams.q;
-    }
-
-    console.log(`received options: ${JSON.stringify(options)}`);
-    let images = await fetchImgurImages(options);
+    console.log("JSON.parse(options) :>> ", JSON.parse(options));
+    let images = await fetchImgurImages(JSON.parse(options));
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(images));
@@ -244,6 +227,9 @@ async function searchImagesRoute(req, res) {
   } else if (type == "userEdits") {
     console.log("userEdits");
     getUserEditsRoute(req, res);
+  } else if (type == "RemoteImgurUserImages") {
+    console.log("RemoteImgurUserImages");
+    fetchRemoteImgurUserImage(req, res);
   } else {
     res.writeHead(404);
     res.end();
@@ -325,6 +311,7 @@ async function saveNewImgurImages(req, res) {
       postId,
       imageUrl
     );
+
     let fail = false;
     if (result.success) {
       if (result.download) {
@@ -341,7 +328,7 @@ async function saveNewImgurImages(req, res) {
 
       let meta = await getImgurMetaDataFromPostId(postId);
 
-      await saveImageMetaData(meta, result.id);
+      // await saveImageMetaData(meta, result.id);
 
       console.log(
         "Storeing: " +
@@ -514,13 +501,13 @@ async function getComments(req, res) {
 
   if (postId && !ok) {
     response = await getImgurMetaDataFromPostId(postId);
-    saveImageMetaData(
+    /* saveImageMetaData(
       {
         comments: response.comments,
         details: response.details,
       },
       imageId
-    );
+    ); */
 
     ok = true;
   }
@@ -578,7 +565,7 @@ function trimMetaData(meta) {
     ups: meta.details.ups,
     downs: meta.details.downs,
     tags: meta.details.tags.map((tag) => {
-      return { name: tag.name };
+      return tag.name;
     }),
   };
 
@@ -610,9 +597,12 @@ async function insertAsocciateImage(type, ext, sessionId) {
 
 async function getImgurMetaDataFromPostId(postId) {
   let response = {};
-  response.comments = await fetchCommentsForPost(postId, clientId);
+  response.comments = await fetchCommentsForPost(
+    postId,
+    imgurApplicationClientId
+  );
 
-  response.details = await fetchPostInfo(postId, clientId);
+  response.details = await fetchPostInfo(postId, imgurApplicationClientId);
 
   return trimMetaData(response);
 }
@@ -624,9 +614,9 @@ async function searchImgurLocallyRoute(req, res) {
   let userId = await checkSessionId(req, res);
   if (!userId) return;
   // console.log('queryParams.tags :>> ', queryParams.tags);;
-  console.log('parsedUrl :>> ', parsedUrl);
+  console.log("parsedUrl :>> ", parsedUrl);
 
-  let tags = queryParams.tags.split(',').filter((item) => item.length > 0);
+  let tags = queryParams.tags.split(",").filter((item) => item.length > 0);
 
   if (tags.length == 0) tags = null;
 
@@ -646,7 +636,7 @@ async function searchImgurLocally(userId, tags, title) {
   );
 
   if (tags) tags = tags.filter((tag) => tag.length > 0);
-  console.log('tags :>> ', tags);
+  console.log("tags :>> ", tags);
 
   return await dataBase.filterIds(ids, tags, "imgur", title);
 }
@@ -755,6 +745,8 @@ async function uploadImage(req, res) {
   let accessToken = await dataBase.getUserImgurAccessToken(userId);
 
   console.log("token stored: " + accessToken);
+
+  accessToken = accessToken.token;
 
   if (!accessToken) {
     res.writeHead(500, { "Content-Type": "application/json" });
@@ -899,7 +891,15 @@ async function storeImgurAccessToken(req, res) {
 
   let token = body.accessToken;
 
-  let ok = await dataBase.insertImgurAccessToken(userId, token);
+  let account_username = body.account_username;
+
+  console.log("storeImgurAccessToken: " + body);
+
+  let ok = await dataBase.insertImgurAccessToken(
+    userId,
+    token,
+    account_username
+  );
 
   console.log(ok);
 
@@ -933,3 +933,38 @@ const secretKey = "dasv12mhuvmohi,xuh121cr1";
   }
 }
  */
+
+async function changeImageMeta(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let body = await getBodyFromRequest(req);
+
+  console.log("body :>> ", body);
+
+  let result = await dataBase.updateImageMetaData(body.id, body.meta);
+
+  console.log("result :>> ", result);
+}
+
+async function fetchRemoteImgurUserImage(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+
+  let result = await dataBase.getUserImgurAccessToken(userId);
+
+  if (!result) {
+    res.writeHead(500, { "Content-Type": "application/json" });
+
+    res.end(JSON.stringify({ cause: "accessToken" }));
+  } else {
+    let { token, account_username } = result;
+
+    result = await fetchPostsFromImgur(account_username, token);
+
+    console.log("result :>> ", result);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(result));
+  }
+}

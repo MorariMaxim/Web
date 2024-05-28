@@ -8,45 +8,10 @@
     <link rel="stylesheet" href="../styles/photo_editor.css" />
   </head>
   <body>
-    <button id="menuButton" class="menu-button">☰</button>
-    <div id="menu" class="menu">
+    <button id="projectImagesButton" class="projectImagesButton">☰</button>
+    <div id="projectImages" class="projectImages">
       <div id="gallery-wrapper">
-        <div class="gallery" id="gallery">
-          <div class="gallery-item">
-            <img src="http://192.168.0.198:3000/getImage?id=1" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/th.jpg" alt="  1" />
-          </div>
-
-          <div class="gallery-item">
-            <img src="../resources/1373758.png" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/1959-2534-000-000.jpg" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="../resources/The_Demon_Seated.jpg" alt="" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/400x400" alt="4" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
-          </div>
-          <div class="gallery-item">
-            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
-          </div>
-        </div>
+        <div class="gallery" id="gallery"></div>
       </div>
     </div>
     <div id="upload-section">
@@ -86,7 +51,51 @@
             Apply Filter
           </button>
         </div>
-        <br />
+
+        <div class="edit-row">
+          <div class="filer-item">
+            <label for="widthInput">Width:</label>
+            <input
+              type="number"
+              id="widthInput"
+              name="widthInput"
+              value="4"
+              min="1"
+            />
+          </div>
+
+          <div class="filer-item">
+            <label for="heightInput">Height:</label>
+            <input
+              type="number"
+              id="heightInput"
+              name="heightInput"
+              value="3"
+              min="1"
+            />
+          </div>
+
+          <div class="filer-item">
+            <label for="canvasColor">Color:</label>
+            <input
+              type="color"
+              id="canvasColor"
+              name="canvasColor"
+              required
+              value="rgb(190,190,190)"
+            />
+          </div>
+
+          <button class="btn" type="button" id="resizeCanvas">Resize</button>
+
+          <button class="btn" type="button" id="changeCanvasBase">
+            Change base image
+          </button>
+
+          <button class="btn" type="button" id="fillSelectedImageButton">
+            Fill selected 
+          </button>
+        </div>
 
         <div id="textParameters" class="edit-row">
           <div class="filer-item">
