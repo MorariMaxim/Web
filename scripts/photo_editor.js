@@ -1,3 +1,5 @@
+import { makeImagesSelectable } from "./gallery";
+
 function uploadImage() {
   let input = document.getElementById("upload-input");
   let file = input.files[0];
@@ -18,3 +20,5 @@ function uploadImage() {
 document.getElementById("filter-form").addEventListener("change", function () {
   testFilter();
 });
+
+makeImagesSelectable();

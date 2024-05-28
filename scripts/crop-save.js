@@ -2,7 +2,21 @@ import {
   PhotoEditor,
   FilterMemento,
   AnnotationMemento,
+  ImageMemento,
 } from "../scripts/PhotoEditor.js";
+
+function makeImagesSelectable() {
+  let images = document.querySelectorAll(".gallery-item img");
+  images.forEach((image) => {
+    image.addEventListener("click", function () {
+      images.forEach((img) => {
+        img.classList.remove("selected-image");
+      });
+
+      image.classList.add("selected-image");
+    });
+  });
+}
 
 const queryParams = Object.fromEntries(
   new URLSearchParams(window.location.search).entries()
@@ -13,7 +27,8 @@ const desktopWidthProportion = 0.6;
 let widthProportion;
 setWidthPropotion();
 
-let showText = true;
+let showText = false;
+let hoverImage = true;
 
 let imageContainer = document.getElementById("imageContainer");
 
@@ -28,6 +43,7 @@ let ctx = mainCanvas.getContext("2d");
 
 const photoEditor = new PhotoEditor(
   mainCanvas,
+  imageContainer,
   document.body.clientWidth * widthProportion
 );
 
@@ -143,7 +159,7 @@ function makeDraggable(element) {
   }
 }
 
-function updateRectangle() {
+async function updateRectangle() {
   let top_ = Math.min(handler1.offsetTop, handler2.offsetTop);
   let left_ = Math.min(handler1.offsetLeft, handler2.offsetLeft);
   let width =
@@ -178,6 +194,29 @@ function updateRectangle() {
     ctx.fillStyle = textColor;
     ctx.filter = photoEditor.filters.join(" ");
     ctx.fillText(text, 0, cropHeight);
+  } else if (hoverImage) {
+    try {
+      let image = await drawableImage(selectedImage());
+
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
+
+      console.log("ctx.width, ctx.height :>> ", ctx.width, ctx.height);
+
+      ctx.drawImage(
+        image,
+        0,
+        0,
+        image.width,
+        image.height,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
 
@@ -279,6 +318,35 @@ function addFormListeners() {
       );
     });
 
+  document
+    .getElementById("pasteImageBtn")
+    .addEventListener("click", async function (event) {
+      event.preventDefault();
+
+      let image = await drawableImage(selectedImage());
+
+      photoEditor.apply(
+        new ImageMemento(
+          photoEditor,
+          image,
+          cropX,
+          cropY,
+          cropHeight,
+          cropWidth
+        )
+      );
+      /* let ctx = photoEditor.canvas.getContext("2d");
+      console.log(image);
+      console.log(photoEditor.displayedImage);
+      ctx.drawImage(
+        image,
+        0,
+        0,
+        photoEditor.canvas.width/2,
+        photoEditor.canvas.height/2
+      ); */
+    });
+
   document.getElementById("undoButton").addEventListener("click", (event) => {
     event.preventDefault();
     photoEditor.undo();
@@ -301,16 +369,20 @@ function addFormListeners() {
     .getElementById("uploadButton")
     .addEventListener("click", uploadImage);
 
-  document.getElementById("showText").addEventListener("change", function () {
-    if (this.checked) {
-      showText = true;
-    } else {
+  document
+    .getElementById("showOptions")
+    .addEventListener("change", function () {
       showText = false;
-    }
+      hoverImage = false;
+      if (this.value == "text") {
+        showText = true;
+      } else if (this.value == "selected image") {
+        hoverImage = true;
+      }
 
-    updateRectangle();
-  });
-  document.getElementById("showText").click();
+      updateRectangle();
+    });
+  document.getElementById("showOptions").value = "selected image";
 }
 
 function getTextInputValues() {
@@ -358,3 +430,27 @@ function setWidthPropotion() {
 function base64FromCanvasImage(image) {
   return image.replace(/^data:image\/\w+;base64,/, "");
 }
+
+makeImagesSelectable();
+
+async function drawableImage(link) {
+  return new Promise((resolve, reject) => {
+    let image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = (error) => reject(error);
+    image.src = link;
+  });
+}
+
+function selectedImage() {
+  let image = [...document.querySelectorAll(".selected-image")][0];
+
+  if (image) {
+    return image.src;
+  } else {
+    throw new Error("No selected image found.");
+  }
+}
+
+let image = document.querySelectorAll(".gallery-item img")[0];
+if (image) image.classList.add("selected-image");

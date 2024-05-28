@@ -1,16 +1,1 @@
-{
-  "details": {
-    "title": "I can see Napoleon isn't going to let me work today.",
-    "description": null,
-    "views": 1294,
-    "ups": 34,
-    "downs": 0,
-    "tags": [{ "name": "cat" }, { "name": "aww" }]
-  },
-  "comments": [
-    {
-      "comment": "...probably thinks he owns the world.",
-      "author": "hgfurgyhauh4uhghghuhgiqguhniij"
-    }
-  ]
-}
+{"details":{"title":"Napoleon the Weiner","description":null,"views":868,"ups":25,"downs":2,"tags":[{"name":"dog"}]},"comments":[{"comment":"NAPoleon","author":"Doritoincognito"}]}

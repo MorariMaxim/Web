@@ -281,5 +281,4 @@ console.log(result); */
 let result = await executeSql("SELECT * FROM get_image_comments($1)", [1]);
 // let result = await executeSql("SELECT * FROM create_comment_root($1,$2)", [commentJson,1]);
 
-
 console.log(result[0].get_image_comments); 

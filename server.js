@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import fs from "fs";
 import { clientId } from "./server/imgur-credentials.js";
-// import jwt from "jsonwebtoken"; 
+// import jwt from "jsonwebtoken";
 
 const accessToken = "42c4f1fc4b77765844a5ff3f8d78c77acecb8414";
 
@@ -80,7 +80,7 @@ const server = createServer(async (req, res) => {
     serveFile(res, filePath);
   } else if (pathComponents[0] == "imgurAccessToken") {
     serveFile(res, "imgurAccessToken.html");
-  }  else if (pathComponents[0] == "storeImgurAccessToken") {
+  } else if (pathComponents[0] == "storeImgurAccessToken") {
     storeImgurAccessToken(req, res);
   } else if (pathComponents[0] == "uploadImage") {
     uploadImage(req, res);
@@ -343,7 +343,12 @@ async function saveNewImgurImages(req, res) {
 
       await saveImageMetaData(meta, result.id);
 
-      console.log(await dataBase.storeImgurMetaData(result.id, meta.details));
+      console.log(
+        "Storeing: " +
+          (await dataBase.storeImgurMetaAndComments(result.id, meta))
+      );
+
+      console.log(`stored fror ${result.id}: ` + JSON.stringify(meta));
     } else response[imageUrl] = "fail";
   }
 
@@ -388,6 +393,22 @@ async function checkSessionId(req, res) {
 // testing function
 (async () => {
   console.log(await dataBase.getImages());
+
+  const imageId = 8;
+  const meta = {
+    views: 1000,
+    ups: 100,
+    downs: 10,
+    title: "Example Image Title",
+    description: "This is an example description for the image.",
+    tags: ["tag1", "tag2", "tag3"],
+  };
+
+  // await dataBase.storeImgurMetaDataToDB(1, meta);
+
+  // console.log(await dataBase.getImgurMetaDataFromDB(1));
+
+  // console.log(await dataBase.getImgurMetaAndCommentsData(imageId));
 
   /* const postData = {
     username: "Maxim",
@@ -473,8 +494,9 @@ async function getComments(req, res) {
   let ok = false;
 
   if (imageId) {
-    let metaData = await getImageMetaData(imageId);
-
+    // let metaData = await getImageMetaData(imageId);
+    let metaData = await dataBase.getImgurMetaAndCommentsData(imageId);
+    console.log("going to send " + JSON.stringify(metaData));
     if (metaData) {
       response.comments = metaData.comments;
       response.details = metaData.details;
@@ -492,15 +514,13 @@ async function getComments(req, res) {
 
   if (postId && !ok) {
     response = await getImgurMetaDataFromPostId(postId);
-
-    if (imageId)
-      saveImageMetaData(
-        {
-          comments: response.comments,
-          details: response.details,
-        },
-        imageId
-      );
+    saveImageMetaData(
+      {
+        comments: response.comments,
+        details: response.details,
+      },
+      imageId
+    );
 
     ok = true;
   }
@@ -603,27 +623,21 @@ async function searchImgurLocallyRoute(req, res) {
 
   let userId = await checkSessionId(req, res);
   if (!userId) return;
+  // console.log('queryParams.tags :>> ', queryParams.tags);;
+  console.log('parsedUrl :>> ', parsedUrl);
 
-  let tags = queryParams.tags.split(/\s+/);
+  let tags = queryParams.tags.split(',').filter((item) => item.length > 0);
 
   if (tags.length == 0) tags = null;
-
-  console.log(`tags: ${tags}`);
 
   let title = queryParams.title;
 
   let result = await searchImgurLocally(userId, tags, title);
 
-  console.log(result);
+  console.log(`returning ids: ${result}`);
 
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(
-    JSON.stringify(
-      result.map((item) => {
-        return { image_id: item.image_id };
-      })
-    )
-  );
+  res.end(JSON.stringify(result));
 }
 
 async function searchImgurLocally(userId, tags, title) {
@@ -631,35 +645,10 @@ async function searchImgurLocally(userId, tags, title) {
     (image) => image.image_id
   );
 
-  let imgurs = await dataBase.retainImgurImages(ids);
+  if (tags) tags = tags.filter((tag) => tag.length > 0);
+  console.log('tags :>> ', tags);
 
-  let metas = await Promise.all(
-    imgurs.map(async (id) => await dataBase.getImgurMetaData(id))
-  );
-
-  console.log("before filters");
-
-  console.log(`title :${title}`);
-
-  console.log(`tags :${tags}`);
-
-  if (title) metas = filterImgurByTitle(metas, title);
-
-  if (tags) metas = filterImgurByTags(metas, tags);
-
-  return metas;
-}
-
-function filterImgurByTitle(metas, titleSubstring) {
-  return metas.filter((meta) =>
-    meta.title.toLowerCase().includes(titleSubstring.toLowerCase())
-  );
-}
-
-function filterImgurByTags(metas, tags) {
-  return metas.filter((meta) =>
-    tags.every((tag) => meta.tags.toLowerCase().includes(tag.toLowerCase()))
-  );
+  return await dataBase.filterIds(ids, tags, "imgur", title);
 }
 
 function stringToRegex(str) {

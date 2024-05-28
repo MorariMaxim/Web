@@ -24,6 +24,18 @@ class DataBase {
       console.error("Error executing query:", err.message);
     }
   }
+
+  async executeFunction(query, params) {
+    try {
+      const result = await this.pool.query(query, params);
+      console.log("Query executed successfully");
+      return result.rows;
+    } catch (err) {
+      console.error("Error executing query:", err.message);
+      return null;
+    }
+  }
+
   async resetDataBase() {
     const dropImgurAccessTokensTable = `
         DROP TABLE IF EXISTS imgurAccessTokens;
@@ -58,9 +70,16 @@ class DataBase {
       await this.run(dropImgurMetaTable);
       await this.run(dropUserImagesTable);
       await this.run(dropImgurImagesTable);
+      await this.run("drop table if exists comment_roots");
+      await this.run("drop table if exists comment_hierarchy");
+      await this.run("drop table if exists titles");
+      await this.run("drop table if exists descriptions");
+      await this.run("drop table if exists tags");
       await this.run(dropImagesTable);
+      await this.run("drop table if exists comments");
       // await this.run(dropSessionsTable);
       // await this.run(dropUsersTable);
+
       console.log("All tables dropped successfully.");
 
       deleteFilesInDirectory("server/repository/image_meta");
@@ -85,7 +104,8 @@ class DataBase {
         session_id TEXT NOT NULL,
         user_id INTEGER,
         login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE (user_id)
       );
     `;
 
@@ -119,13 +139,10 @@ class DataBase {
 
     const createImgurMetaTable = `
       CREATE TABLE IF NOT EXISTS imgurMeta (
-        image_id INTEGER NOT NULL,
-        title TEXT,
-        description TEXT,
+        image_id INTEGER NOT NULL, 
         views INTEGER,
         ups INTEGER,
         downs INTEGER,
-        tags TEXT,
         FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
         UNIQUE(image_id)
       );
@@ -139,7 +156,7 @@ class DataBase {
       );
     `;
 
-    const createTagTable = `CREATE TABLE tags (
+    const createTagTable = `CREATE TABLE IF NOT EXISTS tags (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       image_id INTEGER NOT NULL,
@@ -147,27 +164,41 @@ class DataBase {
       );
       `;
 
-    const createCommentTable = `CREATE TABLE comments (
+    const createCommentTable = `CREATE TABLE IF NOT EXISTS comments (
         id SERIAL PRIMARY KEY,
         author TEXT NOT NULL,
         text TEXT NOT NULL
     );`;
 
-    const create_comment_roots_table = `CREATE TABLE comment_roots (
+    const create_comment_roots_table = `CREATE TABLE IF NOT EXISTS comment_roots (
         id INTEGER PRIMARY KEY,  -- id as PRIMARY KEY to ensure uniqueness
         image_id INTEGER NOT NULL,
         FOREIGN KEY (id) REFERENCES comments(id) ON DELETE CASCADE,
         FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
-    );`;  
+    );`;
 
-    const create_comment_hierarchy_table = `CREATE TABLE comment_hierarchy (
+    const create_comment_hierarchy_table = `CREATE TABLE IF NOT EXISTS comment_hierarchy (
         parent_id INTEGER NOT NULL,
         child_id INTEGER NOT NULL,
         FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE,
         FOREIGN KEY (child_id) REFERENCES comments(id) ON DELETE CASCADE,
-        PRIMARY KEY (parent_id, child_id)  -- Ensure unique parent-child pairs
+        PRIMARY KEY (parent_id, child_id)   
     );
     `;
+
+    const create_titles_table = `create table IF NOT EXISTS titles (
+      text TEXT NOT NULL,
+      image_id INTEGER NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      UNIQUE(image_id)
+    );`;
+
+    const create_descriptions_table = `create table IF NOT EXISTS descriptions (
+      text TEXT NOT NULL,
+      image_id INTEGER NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      unique(image_id)
+    );`;
 
     await this.run(createUsersTable);
     await this.run(createSessionsTable);
@@ -180,6 +211,8 @@ class DataBase {
     await this.run(create_comment_roots_table);
     await this.run(createCommentTable);
     await this.run(create_comment_hierarchy_table);
+    await this.run(create_descriptions_table);
+    await this.run(create_titles_table);
   }
 
   closeDataBase() {
@@ -478,22 +511,13 @@ class DataBase {
   }
 
   //
-  async storeImgurMetaData(imageId, meta) {
+  async storeImgurMetaDataToDB(imageId, meta) {
     const sql = `
-        INSERT INTO imgurMeta (image_id, title, description, views, ups, downs, tags)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        SELECT * FROM store_imgur_meta_data($1, $2::jsonb);
     `;
     try {
       const client = await this.pool.connect();
-      await client.query(sql, [
-        imageId,
-        meta.title,
-        meta.description,
-        meta.views,
-        meta.ups,
-        meta.downs,
-        [...meta.tags].map((tag) => tag.name).join(" "),
-      ]);
+      await client.query(sql, [imageId, JSON.stringify(meta)]);
       client.release();
       return true;
     } catch (err) {
@@ -502,7 +526,22 @@ class DataBase {
     }
   }
 
-  async getImgurMetaData(imageId) {
+  async createCommentRoots(imageId, comments) {
+    const sql = `
+        SELECT create_comment_roots($1::jsonb, $2);
+    `;
+    try {
+      const client = await this.pool.connect();
+      await client.query(sql, [JSON.stringify(comments), imageId]);
+      client.release();
+      return true;
+    } catch (err) {
+      console.error("Error creating comment roots:", err.message);
+      return false;
+    }
+  }
+
+  /*   async getImgurMetaData(imageId) {
     const sql = "SELECT * FROM imgurMeta WHERE image_id = $1";
     try {
       const client = await this.pool.connect();
@@ -513,6 +552,36 @@ class DataBase {
       console.error("Error retrieving imgurMeta:", err.message);
       return null;
     }
+  } */
+
+  async getImgurMetaAndCommentsData(imageId) {
+    const sql = `
+        SELECT get_full_image_data($1) AS full_data;
+    `;
+    try {
+      const client = await this.pool.connect();
+      const res = await client.query(sql, [imageId]);
+      client.release();
+      return res.rows[0].full_data;
+    } catch (err) {
+      console.error("Error retrieving full image data:", err.message);
+      return null;
+    }
+  }
+
+  async storeImgurMetaAndComments(id, meta) {
+    meta.details.tags = meta.details.tags.map((tag) => tag.name);
+
+    console.log(
+      `tags look like: ${JSON.stringify(
+        meta.details.tags.map((tag) => tag.name)
+      )}`
+    );
+    let storedMeta = await dataBase.storeImgurMetaDataToDB(id, meta.details);
+
+    let storedComments = await dataBase.createCommentRoots(id, meta.comments);
+
+    return storedComments && storedMeta;
   }
 
   async getUserEdits(userId, imageType) {
@@ -561,6 +630,13 @@ class DataBase {
       return null;
     }
   }
+
+  async filterIds(ids, tags, type, title) {
+    return (await this.executeFunction(
+      "SELECT filter_ids($1, $2, $3, $4) AS filtered_ids",
+      [ids, tags, type, title]
+    ))[0].filtered_ids;
+  }
 }
 
 export class User {
@@ -605,7 +681,7 @@ function deleteFilesInDirectory(directory) {
 }
 
 const dataBase = new DataBase(dbConfig);
-//  await dataBase.resetDataBase();
+// await dataBase.resetDataBase();
 await dataBase.createTables();
 
 export { dataBase };

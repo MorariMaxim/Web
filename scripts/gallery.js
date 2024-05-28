@@ -45,8 +45,10 @@ function deleteGalleryImages() {
   }
 }
 
-function makeImagesSelectable() {
+export function makeImagesSelectable() {
   let images = document.querySelectorAll(".gallery-item img");
+
+  console.log("images :>> ", images);
 
   images.forEach((image) => {
     image.addEventListener("click", function () {
@@ -78,8 +80,6 @@ export const focusImage = () => {
   if (selectAlls.length == 0) {
     alert("No image selected");
   } else {
-
-
     redirectTo("../mainPages/image_focus_page.html", {
       focusedImage: selectAlls[0].src,
       postId: selectAlls[0].getAttribute("postId"),
@@ -89,6 +89,22 @@ export const focusImage = () => {
 };
 
 let focusButton = document.getElementById("Focus");
+
+let editButton = document.getElementById("Edit");
+
+editButton.addEventListener("click", editImages);
+
+function editImages() {
+  let images = [...getSelectedImages()];
+
+  if (images.length == 0) alert("No images selected");
+  else {
+    // console.log('images.map(image => image.src) :>> ', images.map(image => image.src));
+    redirectTo("mainPages/photo_editor.html", {
+      project_images: images.map((image) => image.src),
+    });
+  }
+}
 
 focusButton.addEventListener("click", focusImage);
 
@@ -220,10 +236,10 @@ async function searchLocalImgurRequest() {
   try {
     const responseBody = await response.json();
 
-    console.log(responseBody);
     if (responseBody.length == 0) alert("no images found");
     else {
-      fillGallery(mapIdsToUrls(responseBody.map((item) => item.image_id)));
+      // console.log('responseBody :>> ', responseBody);
+      fillGallery(mapIdsToUrls(responseBody));
     }
   } catch (e) {
     alert("Seemingly there was a backend error, the server returned no images");
@@ -343,6 +359,7 @@ async function requestUserEdits() {
 }
 
 function mapIdsToUrls(ids) {
+  console.log("ids :>> ", ids);
   ids = ids.map((id) => {
     return {
       src: `http://${serverIp}:3000/getImage?id=${id}`,

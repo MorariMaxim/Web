@@ -4,16 +4,18 @@ class PhotoEditor {
   mementos = [];
   annotations = [];
   filters = [];
+  images = [];
   width = 300;
 
-  constructor(canvas,width) {
+  constructor(canvas, imageContainer, width) {
     this.canvas = canvas;
     this.width = width;
+    this.imageContainer = imageContainer;
   }
 
   apply(memento) {
     this.mementos.push(memento);
-    console.log(memento);
+    // console.log(memento);
     memento.apply();
   }
 
@@ -30,23 +32,32 @@ class PhotoEditor {
     this.setCanvasSize(this.width);
   }
 
+  addImage(image) {
+    this.images.push(image);
+  }
+
   undo() {
     let last = this.mementos.pop();
+
+    // console.log('last :>> ', last);
 
     if (last) last.undo();
   }
 
-  draw() { 
+  draw() {
+    // console.log('this.filters :>> ', this.filters);
+    // console.log('this.annotations :>> ', this.annotations);
+
     let ctx = this.canvas.getContext("2d");
 
     let savedFilter = ctx.filter;
     ctx.filter =
       this.filters.length === 0 ? "none" : " " + this.filters.join(" ");
 
-    if (ctx.filter == savedFilter) {
+    /*  if (ctx.filter == savedFilter) {
       this.filters.pop();
-    }
- 
+    } */
+
     ctx.drawImage(
       this.displayedImage,
       0,
@@ -54,6 +65,21 @@ class PhotoEditor {
       this.canvas.width,
       this.canvas.height
     );
+
+    this.images.forEach((image) => {
+      console.log(image);
+      ctx.drawImage(
+        image.data,
+        0,
+        0,
+        image.width,
+        image.height,
+        image.top,
+        image.left,
+        image.distortedWidth,
+        image.distortedHeight
+      );
+    });
 
     for (let annotation of this.annotations) {
       ctx.font = annotation.fontSize + "px " + annotation.type;
@@ -86,12 +112,12 @@ class FilterMemento extends Memento {
 
   undo() {
     this.photoEditor.filters.pop();
-    console.log("filter undo", this.photoEditor.filters);
+    // console.log("filter undo", this.photoEditor.filters);
     this.photoEditor.draw();
   }
 
   apply() {
-    console.log("filter apply");
+    // console.log("filter apply");
     this.photoEditor.filters.push(this.filter);
     this.photoEditor.draw();
   }
@@ -133,4 +159,64 @@ class AnnotationMemento extends Memento {
     this.photoEditor.draw();
   }
 }
-export { PhotoEditor, Memento, FilterMemento, AnnotationMemento };
+
+class ImageMemento extends Memento {
+  top;
+  left;
+  width;
+  height;
+  distortedHeight;
+  distortedWidth;
+  data;
+
+  constructor(photoEditor, data, top, left, distortedHeight, distortedWidth) {
+    super(photoEditor);
+    this.data = data;
+    console.log("this.data :>> ", this.data);
+    this.width = data.width;
+    this.height = data.height;
+    this.top = top;
+    this.left = left;
+    this.distortedHeight = distortedHeight;
+    this.distortedWidth = distortedWidth;
+  }
+
+  undo() {
+    this.photoEditor.images.pop();
+    this.photoEditor.draw();
+  }
+
+  apply() {
+    this.photoEditor.images.push({
+      data : this.data,
+      width: this.width,
+      height: this.height,
+      top: this.top,
+      left: this.left,
+      distortedHeight: this.distortedHeight,
+      distortedWidth: this.distortedWidth,
+    });
+
+    this.photoEditor.draw();
+  }
+}
+
+export { PhotoEditor, Memento, FilterMemento, AnnotationMemento, ImageMemento };
+
+/* menu button */
+
+document.addEventListener("DOMContentLoaded", function () {
+  const menuButton = document.getElementById("menuButton");
+  const menu = document.getElementById("menu");
+
+  menuButton.addEventListener("click", function () {
+    if (menu.style.display === "flex") {
+      menu.style.display = "none";
+    } else {
+      menu.style.display = "flex";
+      menu.style.flexDirection = "column";
+      menu.style.justifyContent = "center";
+      menu.style.alignItems = "center";
+    }
+  });
+});

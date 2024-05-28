@@ -102,7 +102,7 @@ commentsButton.addEventListener("click", async (event) => {
     let tags = [];
 
     details.tags?.forEach((tag) => {
-      tags.push(tag.name);
+      tags.push(tag);
     });
     if (tags.length) addDetail("tags", tags.join(", "));
   }

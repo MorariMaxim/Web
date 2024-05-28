@@ -8,17 +8,52 @@
     <link rel="stylesheet" href="../styles/photo_editor.css" />
   </head>
   <body>
+    <button id="menuButton" class="menu-button">☰</button>
+    <div id="menu" class="menu">
+      <div id="gallery-wrapper">
+        <div class="gallery" id="gallery">
+          <div class="gallery-item">
+            <img src="http://192.168.0.198:3000/getImage?id=1" alt="  1" />
+          </div>
+          <div class="gallery-item">
+            <img src="../resources/th.jpg" alt="  1" />
+          </div>
+
+          <div class="gallery-item">
+            <img src="../resources/1373758.png" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="../resources/1959-2534-000-000.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="../resources/The_Demon_Seated.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/400x600" alt="  1" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/800x400" alt="  2" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/600x800" alt="  3" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/400x400" alt="4" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/600x600" alt="  5" />
+          </div>
+          <div class="gallery-item">
+            <img src="https://source.unsplash.com/random/800x600" alt="  6" />
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="upload-section">
       <input type="file" id="upload-input" />
       <button class="btn" id="uploadButton">Upload</button>
     </div>
     <div class="image-container" id="imageContainer">
-      <!-- <img
-        id="mainImage"
-        src="../resources/th.jpg"
-        alt="Image"
-        style="width: 100%; height: 100%"
-      /> -->
       <div id="handler1" class="handler"></div>
       <div id="handler2" class="handler"></div>
       <div id="rectangle" class="rectangle">
@@ -55,13 +90,12 @@
 
         <div id="textParameters" class="edit-row">
           <div class="filer-item">
-            <label for="showText">Show Text:</label>
-            <input
-              type="checkbox"
-              class="niceCheckBox"
-              id="showText"
-              name="showText"
-            />
+            <label for="showOptions">Show</label>
+            <select id="showOptions" name="showOptions">
+              <option value="text">text</option>
+              <option value="selected image">selected image</option>
+              <option value="nothing">nothing</option>
+            </select>
           </div>
           <div class="filer-item">
             <label for="textInput">Text:</label>
@@ -101,6 +135,10 @@
           </div>
 
           <button class="btn" type="button" id="addTextBtn">Add Text</button>
+
+          <button class="btn" type="button" id="pasteImageBtn">
+            Paste Image
+          </button>
         </div>
         <br />
 
@@ -112,7 +150,7 @@
       </form>
     </div>
     <!-- <script type="module" src="../scripts/prepend_header.js"></script> -->
- 
+
     <script type="module" src="../scripts/crop-save.js"></script>
   </body>
 
