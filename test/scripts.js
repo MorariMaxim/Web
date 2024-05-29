@@ -1,15 +1,16 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const projectImagesButton = document.getElementById('projectImagesButton');
-    const menu = document.getElementById('menu');
+// scripts.js
+document.addEventListener("DOMContentLoaded", () => {
+  const userIconContainer = document.querySelector(".user-icon-container");
+  const logoutMenu = document.querySelector(".logout-menu");
 
-    projectImagesButton.addEventListener('click', function() {
-        if (menu.style.display === 'flex') {
-            menu.style.display = 'none';
-        } else {
-            menu.style.display = 'flex';
-            menu.style.flexDirection = 'column';
-            menu.style.justifyContent = 'center';
-            menu.style.alignItems = 'center';
-        }
-    });
+  userIconContainer.addEventListener("click", () => {
+    const isMenuVisible = logoutMenu.style.display === "block";
+    logoutMenu.style.display = isMenuVisible ? "none" : "block";
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!userIconContainer.contains(event.target)) {
+      logoutMenu.style.display = "none";
+    }
+  });
 });

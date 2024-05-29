@@ -14,6 +14,10 @@ import {
 import axios from "axios";
 import fs from "fs";
 import { imgurApplicationClientId } from "./server/imgur-credentials.js";
+import nodemailer from "nodemailer";
+
+const applicationEmail = "mpic_application@outlook.com";
+const emailPassword = "mpic102442=Asf";
 
 const __dirname = decodeURIComponent(
   dirname(new URL(import.meta.url).pathname)
@@ -94,6 +98,8 @@ const server = createServer(async (req, res) => {
     saveImages(req, res);
   } else if (pathComponents[0] == "loginRoute") {
     loginRoute(req, res);
+  } else if (pathComponents[0] == "resetPassword") {
+    resetPassword(req, res);
   } else if (pathComponents.length == 1) {
     const filePath = join(__dirname, "mainPages", pathComponents[0]);
     serveFile(res, filePath);
@@ -167,36 +173,54 @@ async function loginRoute(req, res) {
     console.log(body);
 
     if (loginAttempt) {
-      let userId = await dataBase.getUserIdByUsername(body.username);
+      let user = await dataBase.getUserByName(body.username);
 
-      if (userId) {
+      console.log("user :>> ", user);
+      if (!user || user.password != body.password) {
+        console.log(
+          `Bad credentials: request: ${JSON.stringify(
+            body
+          )}, db: ${JSON.stringify(user)}`
+        );
+      } else {
         const newSessionId = await generateSessionId();
 
-        response.username = body.getUsername;
+        response.username = user.getUsername;
         response.validCredentials = "true";
         response.sessionId = newSessionId;
 
-        await dataBase.run(`delete from sessions where user_id = ${userId}`);
-        await dataBase.setSessionId(userId, newSessionId);
-      } else {
-        console.log("invalid username " + body.username);
+        await dataBase.run(
+          `delete from sessions where user_id = ${user.getId}`
+        );
+        await dataBase.setSessionId(user.getId, newSessionId);
       }
     } else {
       let userData = await dataBase.getUserByName(body.username);
-
-      if (userData) {
+      let emailTaken = await (async () => {
+        let result = await dataBase.executeFunction(
+          `select * from users where email = $1`,
+          [body.email]
+        );
+        return result && result.length > 0;
+      })();
+      if (emailTaken) {
+        response.signupresult = "email already in use";
+      } else if (userData) {
         response.signupresult = "username taken";
       } else {
-        dataBase.addUser(body.username, body.password);
-        let user = await dataBase.getUserByName(body.username);
-
+        console.log(
+          await dataBase.addUser(body.username, body.password, body.email)
+        );
+        let userId = (await dataBase.getUserByName(body.username)).id;
+        console.log("userId :>> ", userId);
         response.signupresult = "success";
         const newSessionId = await generateSessionId();
         console.log(newSessionId);
 
-        await dataBase.setSessionId(user.getId(), newSessionId);
+        await dataBase.run(`delete from sessions where user_id = ${userId}`);
+        await dataBase.setSessionId(userId, newSessionId);
 
-        console.log(await dataBase.getSessionIdByUserId(user.getId()));
+        console.log(await dataBase.getSessionIdByUserId(userId));
 
         response.sessionId = newSessionId;
       }
@@ -967,4 +991,109 @@ async function fetchRemoteImgurUserImage(req, res) {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(result));
   }
+}
+
+async function sendEmail(mailOptions) {
+  let transporter = nodemailer.createTransport({
+    host: "smtp-mail.outlook.com", // Outlook.com SMTP server
+    port: 587, // Port for Outlook.com
+    secure: false, // TLS required, but not SSL
+    auth: {
+      user: applicationEmail,
+      pass: emailPassword,
+    },
+  });
+
+  // Send mail with defined transport object
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log("Error occurred:", error);
+    }
+    console.log("Message sent:", info.messageId);
+  });
+}
+
+async function resetPassword(req, res) {
+  let body = await getBodyFromRequest(req);
+
+  let userName = body.username;
+  let resetcode = body.resetcode;
+  let newpassword = body.newpassword;
+
+  if (userName) {
+    let user = await dataBase.getUserByName(userName);
+
+    if (!user) {
+      res.writeHead(401);
+      res.end();
+    }
+    let generatedCode = generateRandomCode(6);
+
+    console.log(
+      'await dataBase.executeFunction("delete from resetPassCodes where username = $1", [userName]) :>> ',
+      await dataBase.executeFunction(
+        "delete from resetPassCodes where username = $1",
+        [userName]
+      )
+    );
+    console.log(
+      await dataBase.executeFunction(
+        "insert into resetPassCodes (username, code) values ($1,$2)",
+        [userName, generatedCode]
+      )
+    );
+    let email = user.getEmail;
+    console.log("email :>> ", email);
+
+    try {
+      sendEmail({
+        from: applicationEmail,
+        to: user.getEmail,
+        subject: "Code for password reset",
+        text: `You can use this code to reset your password: ${generatedCode}`,
+      });
+    } catch (e) {
+      console.log("Error sending email", e);
+      res.writeHead(500);
+      res.end();
+    }
+
+    res.writeHead(200);
+    res.end();
+  } else if (resetcode && newpassword) {
+    let result = await dataBase.executeFunction(
+      "select username from resetPassCodes where code = $1 ",
+      [resetcode]
+    );
+    if (result.length == 0) {
+      res.writeHead(401);
+      res.end("Invalid reset code");
+    } else {
+      let username = result[0].username;
+
+      result = await dataBase.executeFunction(
+        "UPDATE users SET password = $1 WHERE username = $2",
+        [newpassword, username]
+      );
+
+      console.log("result :>> ", result);
+
+      res.writeHead(200);
+      res.end();
+    }
+  }
+  res.writeHead(400);
+  res.end();
+}
+function generateRandomCode(length) {
+  const characters =
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  let code = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    code += characters[randomIndex];
+  }
+
+  return code;
 }

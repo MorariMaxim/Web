@@ -5,11 +5,11 @@ import { logged_header, unlogged_header } from "../resources/headers.js";
 
 let sessionId = localStorage.getItem("sessionId");
 
-console.log('sessionId :>> ', sessionId);
+console.log("sessionId :>> ", sessionId);
 
 let logged = sessionId ? await sessionManager.sendSessionId(sessionId) : false;
 
-console.log('logged :>> ', logged);
+console.log("logged :>> ", logged);
 
 addHeader(logged);
 
@@ -32,6 +32,8 @@ function addHeader(logged) {
 
   addLinkToHeader(stylesheet, "start");
   addLinkToHeader("../styles/common.css", "start");
+
+  addLogout();
 }
 
 function addLinkToHeader(link, position) {
@@ -53,4 +55,21 @@ function setUserName(username) {
   let element = document.getElementById("username-block");
 
   element.innerHTML = localStorage.getItem("nickName");
+}
+
+function addLogout() {
+  const logoutLink = document.getElementById("logout-link");
+
+  console.log("logoutLink :>> ", logoutLink);
+
+  logoutLink.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const confirmLogout = confirm("Are you sure you want to log out?");
+    if (confirmLogout) {
+      localStorage.removeItem("sessionId");
+      localStorage.removeItem("nickName");
+      window.location.href = "login_page.html";
+    }
+  });
 }

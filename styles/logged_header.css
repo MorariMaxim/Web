@@ -7,7 +7,7 @@
   z-index: 1000;
   background-color: #ecf0f3;
   height: 48px;
-  width: 100%; 
+  width: 100%;
 
   box-shadow: 0px 0.7px 2.7px rgba(0, 0, 0, 0.025),
     0px 1.7px 6.9px rgba(0, 0, 0, 0.035), 0px 3.5px 14.2px rgba(0, 0, 0, 0.045),
@@ -65,7 +65,7 @@
     rgba(77, 6, 95, 1) 560%
   );
   background-clip: text;
-  color: transparent;  
+  color: transparent;
 }
 
 .link-unlogged-main {
@@ -129,4 +129,33 @@
   padding: 5px 10px;
   text-decoration: none;
   color: #333333;
+}
+
+/* 
+ */
+.logout-menu {
+  display: none;
+  position: absolute;
+  top: 70%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  z-index: 10;
+}
+
+.logout-menu a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: black;
+}
+
+.logout-menu a:hover {
+  background-color: #f5f5f5;
+}
+
+.logged-user-section:hover .logout-menu {
+  display: block;
 }

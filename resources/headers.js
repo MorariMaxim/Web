@@ -38,6 +38,12 @@ const logged_header = `<header class="logged-header header">
   <div href="login_page.html" class="logged-user-section">
     <p id ="username-block">Username</p>
     <img id="unlogged-image" src="../resources/user.png" alt="unlogged user" />
+    <div class="logout-menu">
+    <!-- <a href="/profile">Profile</a>
+    <a href="/settings">Settings</a> -->
+    <a href="/logout" id="logout-link">Log Out</a>
+
+  </div>
   </div>
 </div>
 </header>

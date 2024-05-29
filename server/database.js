@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { extname } from "path";
-import fs from "fs";
+import fs, { readdirSync } from "fs";
 import path from "path";
 import pkg from "pg";
 const { Pool } = pkg;
@@ -79,6 +79,7 @@ class DataBase {
       await this.run("drop table if exists comments");
       await this.run(dropSessionsTable);
       await this.run(dropUsersTable);
+      await this.run("drop table resetPassCodes");
 
       console.log("All tables dropped successfully.");
 
@@ -109,6 +110,15 @@ class DataBase {
         UNIQUE (user_id)
       );
     `;
+    const createResetPassCodesTable = `
+    CREATE TABLE IF NOT EXISTS resetPassCodes (
+      id SERIAL PRIMARY KEY, 
+      username TEXT not null,
+      code TEXT not null,
+      FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE,
+      UNIQUE (username)
+    );
+  `;
 
     const createImagesTable = `
       CREATE TABLE IF NOT EXISTS images (
@@ -215,6 +225,7 @@ class DataBase {
     await this.run(create_comment_hierarchy_table);
     await this.run(create_descriptions_table);
     await this.run(create_titles_table);
+    await this.run(createResetPassCodesTable);
   }
 
   closeDataBase() {
@@ -240,7 +251,7 @@ class DataBase {
     }
   }
 
-  async addUser(name, password) {
+  async addUserv0(name, password) {
     const sql = "INSERT INTO users (username, password) VALUES ($1, $2)";
     try {
       const client = await this.pool.connect();
@@ -253,6 +264,12 @@ class DataBase {
         console.error(err);
       }
     }
+  }
+  async addUser(name, password, email) {
+    return this.executeFunction(
+      "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
+      [name, password, email]
+    );
   }
 
   async getUserIdByUsername(username) {
@@ -312,16 +329,18 @@ class DataBase {
   }
 
   async getUserById(userId) {
-    const sql = "SELECT id, username, password FROM users WHERE id = $1";
+    const sql = "SELECT id, username, password, email FROM users WHERE id = $1";
     try {
       const client = await this.pool.connect();
       const result = await client.query(sql, [userId]);
       client.release();
+      console.log("geUserByid: " + result.rows[0]);
       return result.rows.length > 0
         ? new User(
             result.rows[0].id,
             result.rows[0].username,
-            result.rows[0].password
+            result.rows[0].password,
+            result.rows[0].email
           )
         : null;
     } catch (err) {
@@ -587,7 +606,7 @@ class DataBase {
   }
 
   async storeImgurMetaAndComments(id, meta) {
-    console.log("storeImgurMetaAndComments: " + JSON.stringify(meta)); 
+    console.log("storeImgurMetaAndComments: " + JSON.stringify(meta));
 
     console.log(`tags look like: ${JSON.stringify(meta.details.tags)}`);
     let storedMeta = await dataBase.storeImgurMetaDataToDB(id, meta.details);
@@ -661,10 +680,11 @@ class DataBase {
 }
 
 export class User {
-  constructor(id, username, password) {
+  constructor(id, username, password, email) {
     this.id = id;
     this.username = username;
     this.password = password;
+    this.email = email;
   }
 
   get getId() {
@@ -677,6 +697,9 @@ export class User {
 
   get getPassword() {
     return this.password;
+  }
+  get getEmail() {
+    return this.email;
   }
 }
 

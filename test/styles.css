@@ -1,0 +1,50 @@
+/* styles.css */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.header-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  background-color: #333;
+}
+
+.user-icon-container {
+  position: relative;
+}
+
+.user-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.logout-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  z-index: 10;
+}
+
+.logout-menu a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: black;
+}
+
+.logout-menu a:hover {
+  background-color: #f5f5f5;
+}
+
+.user-icon-container:hover .logout-menu {
+  display: block;
+}

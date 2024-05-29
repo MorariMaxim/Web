@@ -10,13 +10,14 @@
   </head>
   <body>
     <div class="login-container">
-      <form class="login-form" action="#">
-        <h1 id="authHeader">Log In</h1>
+      <!-- login form -->
+      <form class="login-form" action="#" actionType="log-in">
+        <h1 class="form-header">Log In</h1>
         <div class="form-group">
           <label for="username">Username</label>
           <input
             type="text"
-            id="username-input"
+            class="username-input"
             name="username"
             placeholder=" "
           />
@@ -26,27 +27,110 @@
           <div class="password-container">
             <input
               type="password"
-              id="password-input"
+              class="password-input"
               name="password"
-              placeholder=" "
+              required
             />
             <div>
               <img
-                id="password-visibility-button"
+                class="password-visibility-button"
                 src="../resources/hide-password.png"
               />
             </div>
           </div>
         </div>
-        <div id="submit-container">
-          <button id="submit-button" type="submit">submit</button>
+      </form>
 
-          <div id="authAction-toggle">Sign Up</div>
+      <!-- singup form -->
+      <form class="singup-form hidden" action="#" actionType="sign-up">
+        <h1 class="form-header">Sign Up</h1>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            class="username-input"
+            name="username"
+            placeholder=" "
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-container">
+            <input
+              type="password"
+              class="password-input"
+              name="password"
+              required
+            />
+            <div>
+              <img
+                class="password-visibility-button"
+                src="../resources/hide-password.png"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="form-group" id="emailFromGroup">
+          <label for="email">Email</label>
+          <input type="email" id="email-input" name="email" placeholder=" " />
         </div>
       </form>
+
+      <!-- reset pass form -->
+      <form class="reset-form hidden" action="#" actionType="reset-password">
+        <h1 class="form-header">Reset Password</h1>
+        <div class="form-group send-code-phase">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            class="username-input"
+            name="username"
+            placeholder=" "
+          />
+        </div>
+
+        <div class="form-group reset-code-phase hidden">
+          <label for="newpassword">New Password</label>
+          <input
+            type="text"
+            class="password-input"
+            name="newpassword"
+            placeholder=" "
+          />
+        </div>
+        <div class="form-group reset-code-phase hidden">
+          <label for="resetcode">Reset Code</label>
+          <input
+            type="text"
+            id="resetcode-input"
+            name="resetcode"
+            placeholder=" "
+          />
+        </div>
+      </form>
+
+      <div id="submit-container">
+        <button id="submit-button" type="submit">submit</button>
+        <div
+          id="resetPasswordButton"
+          class="nowrap sectionSelect"
+          actionType="reset-password"
+        >
+          Reset Password
+        </div>
+        <div
+          id="signup-button"
+          class="nowrap sectionSelect"
+          actionType="sign-up"
+        >
+          Sign Up
+        </div>
+        <div id="login-button" class="nowrap sectionSelect" actionType="log-in">
+          Log in
+        </div>
+      </div>
     </div>
   </body>
   <script type="module" src="../scripts/prepend_header.js"></script>
   <script type="module" src="../scripts/login.js"></script>
- 
 </html>
