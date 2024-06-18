@@ -82,7 +82,9 @@ export const focusImage = () => {
   } else {
     redirectTo("/image_focus_page.html", {
       focusedImage: selectAlls[0].src,
-      postId: selectAlls[0].getAttribute("postId"),
+      remoteId:
+        selectAlls[0].getAttribute("postId") ||
+        selectAlls[0].getAttribute("id"),
       type: selectAlls[0].getAttribute("type"),
     });
   }
@@ -110,16 +112,16 @@ focusButton.addEventListener("click", focusImage);
 
 function showSelectedSection(select) {
   const value = select.value;
+  let action;
 
-  filterButton.innerHTML = actionFromSelectedValue(value);
+  filterButton.innerHTML = action = actionFromSelectedValue(value);
 
   let phactMenus = document.querySelectorAll(".PhactMenu");
 
   phactMenus.forEach((menu) => {
     menu.style.display =
-      menu.getAttribute("phactType") == value ? "block" : "none";
+      menu.getAttribute("phactType") == action ? "block" : "none";
   });
-  //newImgurFBar
 
   let filterBars = document.querySelectorAll(".filterBarVariant");
 
@@ -130,8 +132,9 @@ function showSelectedSection(select) {
 }
 
 function actionFromSelectedValue(value) {
-  if (value == "New Imgur") return "Fetch";
+  if (value == "New Imgur" || value == "New Unsplash") return "Fetch";
   else if (value == "Local Imgur") return "Filter";
+  return "Fetch";
 }
 let sectionSelect = document.getElementById("sectionSelect");
 
@@ -162,6 +165,7 @@ filterButton.addEventListener("click", async () => {
 
   if (value == "New Imgur") downloadFromImgurRequest();
   else if (value == "Local Imgur") searchLocalImgurRequest();
+  else if (value == "New Unsplash") downloadFromUnsplashRequest();
 });
 
 fetchNewImgurUserButton.addEventListener("click", async () => {
@@ -289,18 +293,23 @@ saveButtons.forEach((button) => {
 });
 
 async function saveImagesRequest() {
+  let type = sectionSelect.value;
+
   let htmlImages = getSelectedImages();
 
   if (htmlImages.length == 0) {
     alert("No images selected");
     return;
   }
-
-  htmlImages = [...htmlImages].filter(
-    (element) => element.getAttribute("type") == "New Imgur"
-  );
-
-  let images = getImgurDataArray(htmlImages);
+  let images;
+  if (type == "New Imgur") {
+    images = getImgurDataArray(htmlImages);
+  } else if (type == "New Unsplash") {
+    images = getUnsplashDataArray(htmlImages);
+  } else {
+    alert("something went wrong");
+    return;
+  }
 
   console.log("save request");
   let response = await fetch("/saveImages", {
@@ -308,7 +317,7 @@ async function saveImagesRequest() {
     headers: {
       "Content-Type": "application/json",
       sessionId: localStorage.getItem("sessionId"),
-      imagetype: "New Imgur",
+      imagetype: type,
     },
     body: JSON.stringify(images),
   });
@@ -324,7 +333,7 @@ async function saveImagesRequest() {
 
     if (imgElement && response[image] != "fail") {
       imgElement.src = `http://${serverIp}:3000/getImage?id=${response[image]}`;
-      imgElement.setAttribute("type", "Local Imgur");
+      // imgElement.setAttribute("type", "Local Imgur");
     } else {
       failed.push(image);
     }
@@ -339,6 +348,14 @@ function getImgurDataArray(htmlImages) {
       postId: image.getAttribute("postId"),
       src: image.src,
       type: image.getAttribute("type"),
+    };
+  });
+}
+function getUnsplashDataArray(htmlImages) {
+  return [...htmlImages].map((image) => {
+    return {
+      id: image.getAttribute("id"),
+      src: image.src,
     };
   });
 }
@@ -411,4 +428,49 @@ async function requestRemoteImgurUserImages() {
   console.log("ids :>> ", ids);
 
   fillGallery(ids);
+}
+
+async function downloadFromUnsplashRequest() {
+  let queryParams = new URLSearchParams({
+    type: "unsplashSearch",
+  });
+
+  let headers = {
+    sessionId: localStorage.getItem("sessionId"),
+  };
+
+  let criteria = {};
+  if (unsplashOrientation.value != "none") {
+    criteria.orientation = unsplashOrientation.value;
+  }
+  if (unsplashOrder.value != "none") {
+    criteria.order = unsplashOrder.value;
+  }
+  if (unsplashContentFilter.value != "none") {
+    criteria.contentFilter = unsplashContentFilter.value;
+  }
+  if (unsplashColor.value != "none") {
+    criteria.color = unsplashColor.value;
+  }
+
+  criteria.page = unsplashPage.value;
+
+  criteria.query = keepSpacesAndLetters(UnsplashKeywords.value).trim();
+
+  console.log("criteria.query :>> ", criteria.query);
+
+  queryParams.append("criteria", JSON.stringify(criteria));
+
+  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
+    method: "get",
+    headers,
+  });
+  try {
+    const responseBody = await response.json();
+    console.log("responseBody :>> ", responseBody);
+    if (responseBody.length == 0) alert("no images found");
+    else fillGallery(responseBody);
+  } catch (e) {
+    alert("Seemingly there was a backend error, the server returned no images");
+  }
 }

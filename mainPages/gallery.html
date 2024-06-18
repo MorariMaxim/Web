@@ -30,19 +30,15 @@
             <div class="dot"></div>
           </div>
           <div class="phact-menu" id="phact-menu">
-            <!-- imgurNew-PhachMenu -->
-            <ul
-              id="imgurNew-PhachtMenu"
-              class="PhactMenu"
-              phactType="New Imgur"
-            >
+            <!-- imgurNew-PhachMenu but  -->
+            <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="Fetch">
               <li>
                 <input
                   class="checkbox-input SelectAll"
-                  id="SelectAll2"
+                  id="SelectAll1"
                   type="checkbox"
                 />
-                <label class="checkbox" for="SelectAll2">
+                <label class="checkbox" for="SelectAll1">
                   <span>
                     <svg width="12px" height="10px">
                       <use xlink:href="#check"></use>
@@ -67,16 +63,13 @@
               </li>
             </ul>
             <!-- imgurLocal-PhachMenu -->
-            <ul
-              id="imgurLocal-PhachtMenu"
-              class="PhactMenu"
-              phactType="Local Imgur"
-            >
+            <ul id="imgurLocal-PhachtMenu" class="PhactMenu" phactType="Filter">
               <li>
                 <input
                   class="checkbox-input SelectAll"
                   id="SelectAll3"
                   type="checkbox"
+                  name="SelectAll3"
                 />
                 <label class="checkbox" for="SelectAll3">
                   <span>
@@ -104,13 +97,14 @@
 
       <div id="filter-phact-menu">
         <select id="sectionSelect">
+          <option value="New Unsplash">New Unsplash</option>
           <option value="New Imgur">New Imgur</option>
           <option value="Local Imgur">Local Imgur</option>
         </select>
         <!-- select all, focus, upload -->
         <div class="phact-menu" id="phact-menu-desktop">
           <!-- imgurNew-PhachMenu -->
-          <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="New Imgur">
+          <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="Fetch">
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -142,18 +136,14 @@
             </li>
           </ul>
           <!-- imgurLocal-PhachMenu -->
-          <ul
-            id="imgurLocal-PhachtMenu"
-            class="PhactMenu"
-            phactType="Local Imgur"
-          >
+          <ul id="imgurLocal-PhachtMenu" class="PhactMenu" phactType="Filter">
             <li>
               <input
                 class="checkbox-input SelectAll"
-                id="SelectAll3"
+                id="SelectAll4"
                 type="checkbox"
               />
-              <label class="checkbox" for="SelectAll3">
+              <label class="checkbox" for="SelectAll4">
                 <span>
                   <svg width="12px" height="10px">
                     <use xlink:href="#check"></use>
@@ -275,6 +265,95 @@
               </div>
             </div>
           </div>
+
+          <!-- new Unsplash -->
+          <div
+            id="newUnsplashFBar"
+            class="filterBarVariant"
+            fbarType="New Unsplash"
+          >
+            <div class="stylingBlock">
+              <div class="form-group">
+                <label for="UnsplashKeywords">Keywords</label>
+                <input
+                  type="text"
+                  id="UnsplashKeywords"
+                  name="UnsplashKeywords"
+                  placeholder="cats, funny "
+                  value="desert"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="unsplashOrientation">Orientation</label>
+                <select id="unsplashOrientation" name="unsplashOrientation">
+                  <option value="landscape">landscape</option>
+                  <option value="portrait">portrait</option>
+                  <option value="squarish">squarish</option>
+                  <option value="none">none</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="unsplashOrder">Order</label>
+                <select id="unsplashOrder" name="unsplashOrder">
+                  <option value="relevant">relevant</option>
+                  <option value="latest">latest</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="unsplashContentFilter">Content Filter</label>
+                <select id="unsplashContentFilter" name="unsplashContentFilter">
+                  <option value="low">low</option>
+                  <option value="high">high</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="unsplashColor">Color</label>
+                <select id="unsplashColor" name="unsplashColor">
+                  <option value="black_and_white">Black and White</option>
+                  <option value="black">Black</option>
+                  <option value="white">White</option>
+                  <option value="yellow">Yellow</option>
+                  <option value="orange">Orange</option>
+                  <option value="red">Red</option>
+                  <option value="purple">Purple</option>
+                  <option value="magenta">Magenta</option>
+                  <option value="green">Green</option>
+                  <option value="teal">Teal</option>
+                  <option value="blue">Blue</option>
+                  <option value="pink">Pink</option>
+                  <option value="brown">Brown</option>
+                  <option value="gray">Gray</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="unsplashPage">page</label>
+                <input
+                  type="number"
+                  id="unsplashPage"
+                  name="unsplashPage"
+                  value="0"
+                  min="0"
+                />
+              </div>
+              <div class="form-group">
+                <label for="unsplashPerPage">per page</label>
+                <input
+                  type="number"
+                  id="unsplashPerPage"
+                  name="unsplashPerPage"
+                  value="10"
+                  min="1"
+                  max="30"
+                />
+              </div>
+            </div>
+          </div>
+
           <button id="filterButton" class="nice-button" role="button">
             Fetch
           </button>

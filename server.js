@@ -15,6 +15,12 @@ import axios from "axios";
 import fs from "fs";
 import { imgurApplicationClientId } from "./server/imgur-credentials.js";
 import nodemailer from "nodemailer";
+import {
+  fetchUnsplashImages,
+  fetchUnsplashMeta,
+} from "./server/unsplash/main.js";
+
+import { pointedExtension } from "./server/utilities.js";
 
 const applicationEmail = "mpic_application@outlook.com";
 const emailPassword = "mpic102442=Asf";
@@ -77,19 +83,21 @@ const server = createServer(async (req, res) => {
     "scripts",
     "styles",
   ];
-  http: if (pathComponents.length == 0) {
+  if (pathComponents.length == 0) {
     const filePath = join(__dirname, "mainPages", "main_page.html");
     serveFile(res, filePath);
   } else if (pathComponents[0] == "imgurAccessToken") {
     serveFile(res, "imgurAccessToken.html");
   } else if (pathComponents[0] == "storeImgurAccessToken") {
     storeImgurAccessToken(req, res);
+  } else if (pathComponents[0] == "uploadDataArrayImage") {
+    uploadDataArrayImage(req, res);
   } else if (pathComponents[0] == "uploadImage") {
     uploadImage(req, res);
   } else if (pathComponents[0] == "changeImageMeta") {
     changeImageMeta(req, res);
-  } else if (pathComponents[0] == "getComments") {
-    getComments(req, res);
+  } else if (pathComponents[0] == "getMeta") {
+    getMeta(req, res);
   } else if (pathComponents[0] == "getImage") {
     getImage(req, res);
   } else if (pathComponents[0] == "searchImages") {
@@ -246,6 +254,18 @@ async function searchImagesRoute(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(images));
+  } else if (type == "unsplashSearch") {
+    let criteria = JSON.parse(queryParams.criteria);
+    console.log("JSON.parse(criteria) :>> ", criteria);
+
+    let images = await fetchUnsplashImages(criteria);
+
+    images = images.results.map((image) => {
+      return { src: image.urls.raw, id: image.id, type: "New Unsplash" };
+    });
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(images));
   } else if (type == "imgurLocal") {
     searchImgurLocallyRoute(req, res);
   } else if (type == "userEdits") {
@@ -274,6 +294,7 @@ async function saveImages(req, res) {
   console.log(`imageType  :${imageType}`);
 
   if (imageType == "New Imgur") saveNewImgurImages(req, res);
+  else if (imageType == "New Unsplash") saveNewUnsplashImages(req, res);
   else if (imageType == "base64") saveDataArrayImage(req, res);
 }
 
@@ -297,7 +318,9 @@ async function saveDataArrayImage(req, res) {
       if (
         await saveImageLocally(
           dataArray,
-          `server/repository/images/${imageId.imageId}${extension}`
+          `server/repository/images/${imageId.imageId}${
+            extension[0] == "." ? extension : "." + extension
+          }`
         )
       ) {
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -415,56 +438,7 @@ async function checkSessionId(req, res) {
     tags: ["tag1", "tag2", "tag3"],
   };
 
-  // await dataBase.storeImgurMetaDataToDB(1, meta);
-
-  // console.log(await dataBase.getImgurMetaDataFromDB(1));
-
-  // console.log(await dataBase.getImgurMetaAndCommentsData(imageId));
-
-  /* const postData = {
-    username: "Maxim",
-  };
-
-  axios
-    .post("http://192.168.0.198:3000/JWT", postData, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    .then((response) => {
-      console.log("Response:", response.data);
-    })
-    .catch((error) => {
-      console.error(
-        "Error:",
-        error.response ? error.response.data : error.message
-      );
-    }); */
-
-  // deleteUserImgurPosts(accessToken, "mmaxim2291");
-
-  // console.log(await imageId2Path(13, "ext"));
-
-  // await deleteImgurImage(accessToken, "kAyn68XlOZOSB2Y");
-
-  /*  let uploadedImage = await uploadImageToImgur(
-    accessToken,
-    "server/repository/images/1.jpg"
-  );
-
-  console.log(uploadedImage);
-
-  console.log(
-    await shareImageToCommunity(
-      uploadedImage.id,
-      accessToken,
-      "SharedImage",
-      null,
-      null,
-      null,
-      null
-    )
-  ); */
+  console.log(await dataBase.executeFunction("select * from sessions"));
 })();
 
 async function getImage(req, res) {
@@ -481,7 +455,10 @@ async function getImage(req, res) {
     return;
   }
 
-  const filePath = join("server/repository/images", `${id}${image.ext}`);
+  const filePath = join(
+    "server/repository/images",
+    `${id}${pointedExtension(image.ext)}`
+  );
 
   console.log(filePath);
 
@@ -496,64 +473,47 @@ async function getImage(req, res) {
   });
 }
 
-async function getComments(req, res) {
-  console.log("GetComments request");
+async function getMeta(req, res) {
+  console.log("getMeta request");
   let imageId = req.headers.imageid;
-  let postId = req.headers.postid;
+  let remoteId = req.headers.remoteid;
+  let type = req.headers.type;
 
   let response = {};
-  let ok = false;
 
   if (imageId) {
-    // let metaData = await getImageMetaData(imageId);
-    let metaData = await dataBase.getImgurMetaAndCommentsData(imageId);
-    console.log("going to send " + JSON.stringify(metaData));
-    if (metaData) {
-      response.comments = metaData.comments;
-      response.details = metaData.details;
-      ok = true;
-    } else {
-      let image = await dataBase.getImageById(imageId);
+    let image = await dataBase.getImageById(imageId);
+    let imageType = image.type;
 
-      if (image.type == "imgur") {
+    if (imageType == "imgur") {
+      let metaData = await dataBase.getImgurMetaAndCommentsData(imageId);
+
+      if (metaData) {
+        response.comments = metaData.comments;
+        response.details = metaData.details;
+      } else {
         let imgurImage = await dataBase.getImgurImage(imageId);
 
-        postId = imgurImage.postId;
+        imgurId = imgurImage.postId;
+
+        if (imgurId) {
+          response = await getImgurMetaDataFromPostId(imgurId);
+        }
       }
+    } else if (imageType == "unsplash") {
+      let meta = await dataBase.getUnsplashMeta(imageId);
+      if (!meta) await dataBase.saveUnsplashMeta(imageId, remoteId);
+
+      response.details = await dataBase.getUnsplashMeta(imageId);
     }
+  } else if (type == "New Imgur") {
+    response = await getImgurMetaDataFromPostId(remoteId);
+  } else if (type == "New Unsplash") {
+    response = await remoteIdgetUnsplashMetaFromRemoteId(remoteId);
   }
 
-  if (postId && !ok) {
-    response = await getImgurMetaDataFromPostId(postId);
-    /* saveImageMetaData(
-      {
-        comments: response.comments,
-        details: response.details,
-      },
-      imageId
-    ); */
-
-    ok = true;
-  }
-
-  if (ok) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(response));
-  } else {
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Can't treat it");
-  }
-}
-
-async function getImageMetaData(imageId) {
-  try {
-    const data = await readFile(`server/repository/image_meta/${imageId}.json`);
-    return JSON.parse(data);
-  } catch (err) {
-    // Handle errors, e.g., file not found
-    console.error("Error reading file:", err);
-    return null;
-  }
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(response));
 }
 
 async function saveImageMetaData(meta, imageId) {
@@ -588,7 +548,7 @@ function trimMetaData(meta) {
     views: meta.details.views,
     ups: meta.details.ups,
     downs: meta.details.downs,
-    tags: meta.details.tags.map((tag) => {
+    tags: meta.details.tags?.map((tag) => {
       return tag.name;
     }),
   };
@@ -629,6 +589,13 @@ async function getImgurMetaDataFromPostId(postId) {
   response.details = await fetchPostInfo(postId, imgurApplicationClientId);
 
   return trimMetaData(response);
+}
+
+async function remoteIdgetUnsplashMetaFromRemoteId(id) {
+  let response = {};
+
+  response.details = await fetchUnsplashMeta(id);
+  return response;
 }
 
 async function searchImgurLocallyRoute(req, res) {
@@ -994,22 +961,25 @@ async function fetchRemoteImgurUserImage(req, res) {
 }
 
 async function sendEmail(mailOptions) {
-  let transporter = nodemailer.createTransport({
-    host: "smtp-mail.outlook.com", // Outlook.com SMTP server
-    port: 587, // Port for Outlook.com
-    secure: false, // TLS required, but not SSL
-    auth: {
-      user: applicationEmail,
-      pass: emailPassword,
-    },
-  });
+  return new Promise((resolve, reject) => {
+    let transporter = nodemailer.createTransport({
+      host: "smtp-mail.outlook.com", // Outlook.com SMTP server
+      port: 587, // Port for Outlook.com
+      secure: false, // TLS required, but not SSL
+      auth: {
+        user: applicationEmail,
+        pass: emailPassword,
+      },
+    });
 
-  // Send mail with defined transport object
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      return console.log("Error occurred:", error);
-    }
-    console.log("Message sent:", info.messageId);
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        reject(error);
+      } else {
+        console.log("Message sent:", info.messageId);
+        resolve(info);
+      }
+    });
   });
 }
 
@@ -1046,7 +1016,7 @@ async function resetPassword(req, res) {
     console.log("email :>> ", email);
 
     try {
-      sendEmail({
+      await sendEmail({
         from: applicationEmail,
         to: user.getEmail,
         subject: "Code for password reset",
@@ -1056,6 +1026,7 @@ async function resetPassword(req, res) {
       console.log("Error sending email", e);
       res.writeHead(500);
       res.end();
+      return;
     }
 
     res.writeHead(200);
@@ -1096,4 +1067,35 @@ function generateRandomCode(length) {
   }
 
   return code;
+}
+
+async function uploadDataArrayImage(req, res) {
+  let userId = await checkSessionId(req, res);
+  if (!userId) return;
+}
+
+async function saveNewUnsplashImages(req, res) {
+  let userId = await checkSessionId(req, res);
+  let body = await getBodyFromRequest(req);
+
+  let response = {};
+  for (let image of body) {
+    let imageUrl = image.src;
+
+    try {
+      let imageId = await dataBase.saveUnsplashImageToUser(
+        imageUrl,
+        image.id,
+        userId
+      );
+
+      response[imageUrl] = imageId;
+    } catch {
+      response[imageUrl] = "fail";
+    }
+  }
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+  console.log("sending " + JSON.stringify(response));
+  res.end(JSON.stringify(response));
 }

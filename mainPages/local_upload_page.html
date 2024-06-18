@@ -2,85 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Local Upload Page</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        display: flex;
-        flex-flow: column;
-      }
-      main {
-        flex: 1;
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-        flex-flow: column;
-      }
-
-      .file-upload-container {
-        flex: 3;
-        overflow-y: auto;
-        scrollbar-width: none;
-        width: 50%;
-        height: 50vh;
-        border: 2px dashed #ccc;
-        display: flex;
-        flex-direction: column; 
-        align-items: center;
-        cursor: pointer;
-        position: relative;
-      }
-      .file-upload-container:hover {
-        border-color: #333;
-      }
-      input[type="file"] {
-        display: none;
-      }
-
-      .file-upload-text {
-        font-size: 18px;
-        color: #333;
-        margin-bottom: 10px;
-      }
-
-      .upload-content {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-top: 20px;
-      }
-
-      .selected-image {
-        margin: 5px;
-        width: 150px;
-        height: 150px;
-        object-fit: cover;
-      }
-
-      .hint-block {
-        display: flex;
-        flex-flow: column;
-        justify-content: center;
-        align-items: center; 
-
-        flex: 1; 
-      }
-
-      .hint-block * {
-        margin: 0;
-        padding: 0;
-      }
-
-      .upload-button-section {
-        flex: 1;
-        display: flex;
-        flex-flow: column;
-
-        justify-content: center;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Upload Page</title> 
+    <link rel="stylesheet" href="../styles/local_upload_page.css">
   </head>
   <body>
     <main>
@@ -96,64 +20,11 @@
       </label>
 
       <div class="upload-button-section">
-        <button class="nice-button">Upload</button>
+        <button class="nice-button" id="uploadButton">Upload</button>
       </div>
     </main>
   </body>
 
-  <script type="module" src="../scripts/prepend_header.js"></script>
-  <script>
-    const fileInput = document.getElementById("fileInput");
-    const uploadContent = document.getElementById("upload-content");
-    const fileDropArea = document.getElementById("fileDropArea");
-
-    fileInput.addEventListener("change", handleFileSelect);
-
-    function handleFileSelect(event) {
-      const files = event.target.files;
-
-      
-      uploadContent.innerHTML = "";
-
-      for (const element of files) {
-        const file = element;
-        if (!file.type.startsWith("image/")) {
-          continue; 
-        }
-
-        const img = document.createElement("img");
-        img.classList.add("selected-image");
-        img.file = file;
-
-        const reader = new FileReader();
-        reader.onload = (function (image) {
-          return function (e) {
-            image.src = e.target.result;
-          };
-        })(img);
-
-        reader.readAsDataURL(file);
-        uploadContent.appendChild(img);
-      }
-    }
-
-    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
-      fileDropArea.addEventListener(eventName, preventDefaults, false);
-      document.body.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    fileDropArea.addEventListener("drop", handleDrop, false);
-
-    function handleDrop(e) {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-
-      e.target.files = files;
-      handleFileSelect(e);
-    }
-  </script>
+  <script type="module" src="../scripts/prepend_header.js"></script> 
+  <script src="../scripts/local_upload_page.js"></script>
 </html>

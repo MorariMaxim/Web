@@ -57,22 +57,23 @@ commentsButton.addEventListener("click", async (event) => {
 
   let id;
   let headers = {};
+  headers.type = queryParams.type;
 
   if (match) {
     id = match[1];
     headers.imageId = id;
     console.log(id);
   } else {
-    let postId = queryParams.postId;
+    let remoteId = queryParams.postId || queryParams.id || queryParams.remoteId;
 
-    if (postId) headers.postid = postId;
+    if (remoteId) headers.remoteid = remoteId;
     else {
       alert("Can't perform action for current object");
       return;
     }
   }
 
-  const response = await fetch("/getComments", {
+  const response = await fetch("/getMeta", {
     method: "get",
     headers,
   });
@@ -81,12 +82,11 @@ commentsButton.addEventListener("click", async (event) => {
     imageDetailList.innerHTML = "";
     let highlighted = [];
 
-    if (details.title) highlighted.push({ title: details.title });
-    if (details.description)
-      highlighted.push({ description: details.description });
-    if (details.views) highlighted.push({ views: details.views });
-    if (details.ups) highlighted.push({ ups: details.ups });
-    if (details.downs) highlighted.push({ downs: details.downs });
+    for (const [key, value] of Object.entries(details)) {
+      if (value) {
+        highlighted.push({ [key]: value });
+      }
+    }
 
     function addDetail(key, value) {
       const li = document.createElement("li");
@@ -100,14 +100,7 @@ commentsButton.addEventListener("click", async (event) => {
         const fieldValue = highlighted[detail_][key];
         addDetail(fieldName, fieldValue);
       }
-    }
-
-    let tags = [];
-
-    details.tags?.forEach((tag) => {
-      tags.push(tag);
-    });
-    if (tags.length) addDetail("tags", tags.join(", "));
+    } 
   }
 
   function addComment(commentInfo, parent) {
@@ -133,7 +126,7 @@ commentsButton.addEventListener("click", async (event) => {
 
     console.log("commentInfo :>> ", commentInfo);
 
-    commentInfo.children.forEach((child) => {
+    commentInfo.children?.forEach((child) => {
       addComment(child, commentDiv);
     });
   }
@@ -152,10 +145,10 @@ commentsButton.addEventListener("click", async (event) => {
     {
       imageDetails = postData.details;
 
-      if (imageDetails.title)
+      if (imageDetails?.title)
         document.getElementById("changeMetaTitle").value = imageDetails.title;
 
-      if (imageDetails.tags)
+      if (imageDetails?.tags)
         document.getElementById("changeMetaTags").value = imageDetails.tags;
     }
 

@@ -8,6 +8,8 @@
   <body>
     <h1>Imgur OAuth Callback</h1>
     <script>
+      console.log(localStorage.getItem("sessionId"));
+
       async function getAccessTokenFromUrl() {
         const hash = window.location.hash.substring(1);
         const params = new URLSearchParams(hash);
@@ -68,7 +70,7 @@
           alert("Something went wrong with the imgur API");
         }
 
-        window.close();
+        // window.close();
       }
 
       window.onload = getAccessTokenFromUrl;

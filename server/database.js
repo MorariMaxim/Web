@@ -3,6 +3,10 @@ import { extname } from "path";
 import fs, { readdirSync } from "fs";
 import path from "path";
 import pkg from "pg";
+import { downloadImage } from "./utilities.js";
+import { fetchUnsplashMeta } from "./unsplash/main.js";
+import { getImageExtension } from "./utilities.js";
+
 const { Pool } = pkg;
 
 const dbConfig = {
@@ -77,7 +81,7 @@ class DataBase {
       await this.run("drop table if exists tags");
       await this.run(dropImagesTable);
       await this.run("drop table if exists comments");
-      await this.run(dropSessionsTable);
+      // await this.run(dropSessionsTable);
       await this.run(dropUsersTable);
       await this.run("drop table resetPassCodes");
 
@@ -212,6 +216,34 @@ class DataBase {
       unique(image_id)
     );`;
 
+    const create_views_table = `create table IF NOT EXISTS views (
+      image_id INTEGER NOT NULL,
+      views INTEGER NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      unique(image_id)
+    );`;
+
+    const create_likes_table = `create table IF NOT EXISTS likes (
+      image_id INTEGER NOT NULL,
+      likes INTEGER NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      unique(image_id)
+    );`;
+
+    const create_downloads_table = `create table IF NOT EXISTS downloads (
+      image_id INTEGER NOT NULL,
+      downloads INTEGER NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      unique(image_id)
+    );`;
+
+    const create_location_table = `create table IF NOT EXISTS locations (
+      image_id INTEGER NOT NULL,
+      location TEXT NOT NULL,
+      FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
+      unique(image_id)
+    );`;
+
     await this.run(createUsersTable);
     await this.run(createSessionsTable);
     await this.run(createImagesTable);
@@ -226,6 +258,11 @@ class DataBase {
     await this.run(create_descriptions_table);
     await this.run(create_titles_table);
     await this.run(createResetPassCodesTable);
+
+    await this.run(create_views_table);
+    await this.run(create_downloads_table);
+    await this.run(create_likes_table);
+    await this.run(create_location_table);
   }
 
   closeDataBase() {
@@ -351,15 +388,10 @@ class DataBase {
 
   async insertImage(type, ext) {
     const sql = "INSERT INTO images (type, ext) VALUES ($1, $2) RETURNING id";
-    try {
-      const client = await this.pool.connect();
-      const result = await client.query(sql, [type, ext]);
-      client.release();
-      return result.rows.length > 0 ? result.rows[0].id : null;
-    } catch (err) {
-      console.error("Error inserting image into images table:", err.message);
-      return null;
-    }
+    const client = await this.pool.connect();
+    const result = await client.query(sql, [type, ext]);
+    client.release();
+    return result.rows[0].id;
   }
 
   async insertImgurImage(imageId, postId, url) {
@@ -381,16 +413,15 @@ class DataBase {
 
   async associateImageToUser(imageId, userId) {
     const sql = "INSERT INTO userImages (user_id, image_id) VALUES ($1, $2)";
+    const client = await this.pool.connect();
     try {
-      const client = await this.pool.connect();
       await client.query(sql, [userId, imageId]);
-      client.release();
-      return true;
     } catch (err) {
       if (err.code !== "23505") {
         console.error("Error associating image to user:", err.message);
-      }
-      return false;
+      } else throw err;
+    } finally {
+      client.release();
     }
   }
   //
@@ -444,6 +475,162 @@ class DataBase {
       return response;
     } catch (err) {
       console.error("Error saving imgur image to user:", err.message);
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  async saveUnsplashImageToUser(link, remoteId, userId) {
+    let client;
+
+    try {
+      client = await this.pool.connect();
+      await client.query("BEGIN");
+
+      let imageId = await this.insertImage(
+        "unsplash",
+        await getImageExtension(link)
+      );
+
+      await this.associateImageToUser(imageId, userId);
+
+      console.log("here");
+
+      await downloadImage(link, "server/repository/images/" + imageId);
+
+      await this.saveUnsplashMeta(imageId, remoteId, client);
+
+      await client.query("COMMIT");
+      return imageId;
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Error saving imgur image to user:", err.message);
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  async saveUnsplashMeta(localId, remoteId, client) {
+    let nested = !!client;
+    if (!nested) client = await this.pool.connect();
+
+    try {
+      if (nested) await client.query("BEGIN");
+
+      let meta = await fetchUnsplashMeta(remoteId);
+
+      await client.query(
+        `
+        INSERT INTO descriptions (text, image_id)
+        VALUES ($1, $2)
+      `,
+        [meta.description, localId]
+      );
+
+      await client.query(
+        `
+        INSERT INTO views (image_id, views)
+        VALUES ($1, $2)
+      `,
+        [localId, meta.views]
+      );
+
+      await client.query(
+        `
+        INSERT INTO likes (image_id, likes)
+        VALUES ($1, $2)
+      `,
+        [localId, meta.likes]
+      );
+
+      await client.query(
+        `
+        INSERT INTO downloads (image_id, downloads)
+        VALUES ($1, $2)
+      `,
+        [localId, meta.downloads]
+      );
+
+      await client.query(
+        `
+        INSERT INTO locations (image_id, location)
+        VALUES ($1, $2)
+      `,
+        [localId, meta.location]
+      );
+
+      for (const tag of meta.tags) {
+        await client.query(
+          `
+          INSERT INTO tags (name, image_id)
+          VALUES ($1, $2)
+        `,
+          [tag, localId]
+        );
+      }
+      if (nested) await client.query("COMMIT");
+    } catch (err) {
+      if (nested) await client.query("ROLLBACK");
+      console.error("Error saving Unsplash metadata:", err.message);
+      throw err;
+    } finally {
+      if (!nested) client.release();
+    }
+  }
+
+  async getUnsplashMeta(localId) {
+    const client = await this.pool.connect();
+
+    try {
+      const meta = {};
+
+      // Fetch description
+      const descriptionResult = await client.query(
+        `SELECT text FROM descriptions WHERE image_id = $1`,
+        [localId]
+      );
+      meta.description = descriptionResult.rows[0]?.text || null;
+
+      // Fetch views
+      const viewsResult = await client.query(
+        `SELECT views FROM views WHERE image_id = $1`,
+        [localId]
+      );
+      meta.views = viewsResult.rows[0]?.views || null;
+
+      // Fetch likes
+      const likesResult = await client.query(
+        `SELECT likes FROM likes WHERE image_id = $1`,
+        [localId]
+      );
+      meta.likes = likesResult.rows[0]?.likes || null;
+
+      // Fetch downloads
+      const downloadsResult = await client.query(
+        `SELECT downloads FROM downloads WHERE image_id = $1`,
+        [localId]
+      );
+      meta.downloads = downloadsResult.rows[0]?.downloads || null;
+
+      // Fetch location
+      const locationResult = await client.query(
+        `SELECT location FROM locations WHERE image_id = $1`,
+        [localId]
+      );
+      meta.location = locationResult.rows[0]?.location || null;
+
+      // Fetch tags
+      const tagsResult = await client.query(
+        `SELECT name FROM tags WHERE image_id = $1`,
+        [localId]
+      );
+      meta.tags = tagsResult.rows.map((row) => row.name);
+
+      return meta;
+    } catch (err) {
+      console.error("Error retrieving Unsplash metadata:", err.message);
       throw err;
     } finally {
       client.release();

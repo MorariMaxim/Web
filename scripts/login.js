@@ -3,12 +3,12 @@ import { redirectTo } from "./common.js";
 
 let hidden = true;
 let submitAction = "log-in";
-let resetPassPhase = 2;
-document
+let resetPassPhase = 1;
+/* document
   .querySelectorAll(".send-code-phase, .reset-code-phase")
   .forEach((item) => {
     item.classList.toggle("hidden");
-  });
+  }); */
 
 document.querySelectorAll(".sectionSelect").forEach((button) => {
   button.addEventListener("click", () => {
@@ -112,7 +112,10 @@ submitButton.addEventListener("click", async (event) => {
           .forEach((item) => {
             item.classList.toggle("hidden");
           });
+
         resetPassPhase = 2;
+      } else {
+        alert(`The server couldn't send an email`);
       }
     } else {
       let resetcode = document.getElementById("resetcode-input").value;
@@ -125,7 +128,7 @@ submitButton.addEventListener("click", async (event) => {
       if (response.ok) {
         alert("You have successfully reset your password");
       } else {
-        alert(`Server response: ${response.text()}`);
+        alert(`Server response: ${await response.text()}`);
       }
     }
   }

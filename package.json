@@ -19,6 +19,7 @@
     "nodemailer": "^6.9.13",
     "pg": "^8.11.5",
     "sqlite3": "^5.1.7",
+    "unsplash-js": "^7.0.19",
     "uuid": "^9.0.1",
     "validator": "^13.12.0"
   }
