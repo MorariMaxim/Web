@@ -4,11 +4,6 @@ import { redirectTo } from "./common.js";
 let hidden = true;
 let submitAction = "log-in";
 let resetPassPhase = 1;
-/* document
-  .querySelectorAll(".send-code-phase, .reset-code-phase")
-  .forEach((item) => {
-    item.classList.toggle("hidden");
-  }); */
 
 document.querySelectorAll(".sectionSelect").forEach((button) => {
   button.addEventListener("click", () => {

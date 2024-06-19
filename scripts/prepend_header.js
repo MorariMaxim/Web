@@ -1,5 +1,6 @@
 import { sessionManager } from "./authentification.js";
 import { logged_header, unlogged_header } from "../resources/headers.js";
+import { redirectTo } from "./common.js";
 
 // await sessionManager.removeSessionId();
 
@@ -9,7 +10,9 @@ console.log("sessionId :>> ", sessionId);
 
 let logged = sessionId ? await sessionManager.sendSessionId(sessionId) : false;
 
-console.log("logged :>> ", logged);
+if (!logged) {
+  if (getCurrentPageName() != "login_page.html") redirectTo("/login_page.html");
+}
 
 addHeader(logged);
 
@@ -60,8 +63,6 @@ function setUserName(username) {
 function addLogout() {
   const logoutLink = document.getElementById("logout-link");
 
-  console.log("logoutLink :>> ", logoutLink);
-
   logoutLink.addEventListener("click", (event) => {
     event.preventDefault();
 
@@ -72,4 +73,17 @@ function addLogout() {
       window.location.href = "login_page.html";
     }
   });
+}
+
+function getCurrentPageName() {
+  // Get the full path from the URL
+  const path = window.location.pathname;
+
+  // Extract the last part of the path
+  const page = path.split("/").pop();
+
+  // Remove any query parameters or hash fragments
+  const pageName = page.split("?")[0].split("#")[0];
+
+  return pageName;
 }

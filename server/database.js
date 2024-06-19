@@ -9,6 +9,11 @@ import { getImageExtension } from "./utilities.js";
 
 const { Pool } = pkg;
 
+// in minutes
+const IMGUR_ACCESS_TOKEN_EXPIRATION_MINUTES = 7 * 24 * 60;
+const RESET_PASS_CODE_EXPIRATION_MINUTES = 10;
+const SESSION_EXPIRATION_MINUTES = 1 * 24 * 60;
+
 const dbConfig = {
   user: "postgres",
   host: "localhost",
@@ -62,7 +67,9 @@ class DataBase {
     `;
 
     const dropSessionsTable = `
-        DROP TABLE IF EXISTS sessions;
+        
+    
+    ;
     `;
 
     const dropUsersTable = `
@@ -70,7 +77,6 @@ class DataBase {
     `;
 
     try {
-      await this.run(dropImgurAccessTokensTable);
       await this.run(dropImgurMetaTable);
       await this.run(dropUserImagesTable);
       await this.run(dropImgurImagesTable);
@@ -81,9 +87,12 @@ class DataBase {
       await this.run("drop table if exists tags");
       await this.run(dropImagesTable);
       await this.run("drop table if exists comments");
-      await this.run(dropSessionsTable);
+
       await this.run(dropUsersTable);
+
+      await this.run(dropSessionsTable);
       await this.run("drop table resetPassCodes");
+      await this.run(dropImgurAccessTokensTable);
 
       console.log("All tables dropped successfully.");
 
@@ -109,7 +118,7 @@ class DataBase {
         id SERIAL PRIMARY KEY,
         session_id TEXT NOT NULL,
         user_id INTEGER,
-        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE (user_id)
       );
@@ -120,6 +129,7 @@ class DataBase {
       username TEXT not null,
       code TEXT not null,
       FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE (username)
     );
   `;
@@ -168,6 +178,7 @@ class DataBase {
         user_id INTEGER NOT NULL,
         token TEXT NOT NULL,
         account_username TEXT NOT NULL,
+        last_access_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, token)
       );
     `;
@@ -349,6 +360,39 @@ class DataBase {
     } catch (err) {
       console.error("Error retrieving user ID:", err.message);
       return null;
+    }
+  }
+  async refreshImgurAccessTokenLastAccessDate(token) {
+    const client = await pool.connect();
+    try {
+      const updateQuery = `
+        UPDATE imgurAccessTokens
+        SET last_access_date = CURRENT_TIMESTAMP
+        WHERE token = $2;
+      `;
+      await client.query(updateQuery, [token]);
+      console.log(`Last access date updated for token: ${token}`);
+    } catch (err) {
+      console.error("Error updating last access date:", err);
+    } finally {
+      client.release();
+    }
+  }
+
+  async refreshLastLoginTime(sessionId) {
+    const client = await pool.connect();
+    try {
+      const updateQuery = `
+        UPDATE sessions
+        SET last_login_time = CURRENT_TIMESTAMP
+        WHERE session_id  = $1;
+      `;
+      await client.query(updateQuery, [sessionId]);
+      console.log(`Last login time updated for user_id: ${sessionId}`);
+    } catch (err) {
+      console.error("Error updating last login time:", err);
+    } finally {
+      client.release();
     }
   }
 
@@ -760,7 +804,6 @@ class DataBase {
 
     return storedComments && storedMeta;
   }
- 
 
   async getUserImgurAccessToken(userId) {
     const sql = "SELECT * FROM imgurAccessTokens WHERE user_id = $1";
@@ -804,6 +847,40 @@ class DataBase {
         [ids, tags, type, title]
       )
     )[0].filtered_ids;
+  }
+
+  async cleanUpExpiredData() {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const deleteImgurAccessTokensQuery = `
+      DELETE FROM imgurAccessTokens
+      WHERE last_access_date < NOW() - INTERVAL '${IMGUR_ACCESS_TOKEN_EXPIRATION_MINUTES} minutes';
+    `;
+      await client.query(deleteImgurAccessTokensQuery);
+
+      const deleteResetPassCodesQuery = `
+      DELETE FROM resetPassCodes
+      WHERE created_at < NOW() - INTERVAL '${RESET_PASS_CODE_EXPIRATION_MINUTES} minutes';
+    `;
+      await client.query(deleteResetPassCodesQuery);
+
+      console.log("cleaning up sessions");
+      const deleteSessionsQuery = `
+      DELETE FROM sessions
+      WHERE last_login_time < NOW() - INTERVAL '${SESSION_EXPIRATION_MINUTES} minutes';
+    `;
+      await client.query(deleteSessionsQuery);
+
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Error cleaning up expired data:", err.message);
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 }
 
@@ -852,8 +929,10 @@ function deleteFilesInDirectory(directory) {
   });
 }
 
-const dataBase = new DataBase(dbConfig);
+export const dataBase = new DataBase(dbConfig);
 // await dataBase.resetDataBase();
 await dataBase.createTables();
 
-export { dataBase };
+/* await dataBase.run("DROP TABLE IF EXISTS sessions");
+await dataBase.run("drop table resetPassCodes");
+await dataBase.run("DROP TABLE IF EXISTS imgurAccessTokens"); */

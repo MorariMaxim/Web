@@ -119,7 +119,7 @@ input[type="date"] {
 
 @media screen and (max-width: 730px) {
   .filter-bar {
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     flex-direction: column;
     height: 90%;
     justify-content: center;

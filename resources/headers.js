@@ -22,8 +22,7 @@ const logged_header = `<header class="logged-header header">
     <div class="line"></div>
     <div class="line"></div>
     <div class="line"></div>
-    <div class="popout-menu">
-      <a href="search_page.html">Platform Download</a> 
+    <div class="popout-menu"> 
       <a href="local_upload_page.html">Local Upload</a>
       <a href="gallery.html">Gallery</a>
     </div>

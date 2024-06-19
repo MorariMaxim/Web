@@ -89,7 +89,7 @@ async function uploadImagesRequest() {
         },
         body: JSON.stringify({
           data: info.base64Data,
-          type: "local",
+          type: "uploaded",
           ext: info.extension,
         }),
       });

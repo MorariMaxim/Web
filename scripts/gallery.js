@@ -133,7 +133,7 @@ function showSelectedSection(select) {
 
 function actionFromSelectedValue(value) {
   if (value == "New Imgur" || value == "New Unsplash") return "Fetch";
-  else if (value == "Local") return "Filter";
+  else if (value == "Local") return "Search";
   return "Fetch";
 }
 let sectionSelect = document.getElementById("sectionSelect");
@@ -170,10 +170,6 @@ filterButton.addEventListener("click", async () => {
 
 fetchNewImgurUserButton.addEventListener("click", async () => {
   requestRemoteImgurUserImages();
-});
-
-fetchEdits.addEventListener("click", async () => {
-  requestUserEdits();
 });
 
 async function downloadFromImgurRequest() {
@@ -268,7 +264,6 @@ function keepSpacesAndLetters(text) {
 }
 
 function fillGallery(images) {
-  deleteGalleryImages();
 
   let gallery = document.getElementById("gallery");
   images.forEach((image) => {
@@ -361,26 +356,6 @@ function getSelectedImages() {
   return document.querySelectorAll(".selected-image");
 }
 
-async function requestUserEdits() {
-  let headers = {
-    "Content-Type": "application/json",
-    sessionId: localStorage.getItem("sessionId"),
-  };
-
-  let queryParams = new URLSearchParams({
-    type: "userEdits",
-  });
-
-  const response = await fetch(`/searchImages?${queryParams.toString()}`, {
-    method: "get",
-    headers,
-  });
-
-  let ids = await response.json();
-
-  fillGallery(mapIdsToUrls(ids.map((id) => id.id)));
-}
-
 function mapIdsToUrls(ids) {
   console.log("ids :>> ", ids);
   ids = ids.map((id) => {
@@ -471,3 +446,12 @@ async function downloadFromUnsplashRequest() {
     alert("Seemingly there was a backend error, the server returned no images");
   }
 }
+
+let cleanButtons = document.querySelectorAll(".CleanGallery");
+console.log("cleanButtons :>> ", cleanButtons);
+
+cleanButtons.forEach((button) =>
+  button.addEventListener("click", () => {
+    deleteGalleryImages();
+  })
+);

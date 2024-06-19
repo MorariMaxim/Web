@@ -31,7 +31,7 @@
           </div>
           <div class="phact-menu" id="phact-menu">
             <!-- imgurNew-PhachMenu but  -->
-            <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="Fetch">
+            <ul id="mobileNewImgurPhactMenu" class="PhactMenu" phactType="Fetch">
               <li>
                 <input
                   class="checkbox-input SelectAll"
@@ -62,8 +62,8 @@
                 <label class="checkbox" for="Focus">Focus</label>
               </li>
             </ul>
-            <!-- imgurLocal-PhachMenu -->
-            <ul id="localPhactMenu" class="PhactMenu" phactType="Filter">
+            <!-- local -->
+            <ul id="mobileLocalPhactMenu" class="PhactMenu" phactType="Search">
               <li>
                 <input
                   class="checkbox-input SelectAll"
@@ -80,7 +80,14 @@
                   <span>Select All</span>
                 </label>
               </li>
-
+              <li>
+                <input
+                  class="checkbox-input"
+                  id="DeleteImages"
+                  type="checkbox"
+                />
+                <label class="checkbox CleanGallery" for="CleanGallery">Clean Gallery</label>
+              </li>
               <li>
                 <input class="checkbox-input" id="Focus" type="checkbox" />
                 <label class="checkbox" for="Focus">Focus</label>
@@ -136,7 +143,7 @@
             </li>
           </ul>
           <!-- localPhachMenu -->
-          <ul id="localPhactMenu" class="PhactMenu" phactType="Filter">
+          <ul id="localPhactMenu" class="PhactMenu" phactType="Search">
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -151,6 +158,11 @@
                 </span>
                 <span>Select All</span>
               </label>
+            </li>
+
+            <li>
+              <input class="checkbox-input" id="DeleteImages" type="checkbox" />
+              <label class="checkbox CleanGallery" for="CleanGallery">Clean Gallery</label>
             </li>
 
             <li>
@@ -364,13 +376,6 @@
           <button id="filterButton" class="nice-button" role="button">
             Fetch
           </button>
-
-          <div class="filterBarVariant" fbarType="Local">
-            <div class="stylingBlock">
-              <h1>or</h1>
-              <button id="fetchEdits" class="nice-button">Get Edits</button>
-            </div>
-          </div>
 
           <div class="filterBarVariant" fbarType="New Imgur">
             <div class="stylingBlock">

@@ -1,4 +1,4 @@
-let menu = document.getElementById("phact-menu");
+let menu = document.getElementById("mobileLocalPhactMenu");
 let container = document.getElementById("phact-menu-container");
 let dots = document.getElementById("dots-container");
 
@@ -12,12 +12,12 @@ container.style.width = initialWidth;
 container.style.height = initialHeight;
 
 container.style.borderRadius = `${parseInt(initialWidth) / 2}px`;
- 
 
 container.addEventListener("mouseover", function () {
   container.style.width = menuWidth;
   container.style.height =
-    parseInt(menuHeight) + parseInt(initialHeight) + "px";
+    parseInt(menuHeight) + parseInt(initialHeight) + "px"; 
+
 });
 container.addEventListener("mouseout", function () {
   container.style.width = initialWidth;

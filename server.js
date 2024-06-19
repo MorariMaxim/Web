@@ -129,6 +129,10 @@ const server = createServer(async (req, res) => {
 
 const PORT = 3000;
 
+const CLEANUP_INTERVAL = 5 * 60 * 1000; // milliseconds, here every 5 minutes
+
+startDBCleanUpThread();
+
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });
@@ -303,11 +307,7 @@ async function saveDataArrayImage(req, res) {
   try {
     if (!dataArray) throw new Error();
 
-    let imageId = await insertAsocciateImage(
-      type,
-      extension,
-      userId
-    );
+    let imageId = await insertAsocciateImage(type, extension, userId);
 
     await saveImageLocally(
       dataArray,
@@ -388,8 +388,9 @@ async function checkSessionId(req, res) {
     res.writeHead(403, { "Content-Type": "text/plain" });
     res.end("Invalid sessionId");
     return null;
+  } else {
+    dataBase.refreshLastLoginTime(req.headers.sessionid);
   }
-
   return userId;
 }
 
@@ -407,7 +408,7 @@ async function checkSessionId(req, res) {
     tags: ["tag1", "tag2", "tag3"],
   };
 
-  // console.log(await dataBase.executeFunction("select * from sessions"));
+  console.log(await dataBase.executeFunction("select * from sessions"));
 
   // await deleteImages([100, 1002]);
 })();
@@ -877,6 +878,8 @@ async function fetchRemoteImgurUserImage(req, res) {
   } else {
     let { token, account_username } = result;
 
+    dataBase.refreshImgurAccessTokenLastAccessDate(token);
+
     return await fetchPostsFromImgur(account_username, token);
   }
 }
@@ -1041,4 +1044,16 @@ async function searchLocalImagesRoute(req, res) {
   );
 
   return await dataBase.filterIds(ids, tags, origin, title);
+}
+
+function startDBCleanUpThread() {
+  dataBase.cleanUpExpiredData().catch((err) => {
+    console.error("Error during scheduled cleanup:", err);
+  });
+
+  setInterval(() => {
+    dataBase.cleanUpExpiredData().catch((err) => {
+      console.error("Error during scheduled cleanup:", err);
+    });
+  }, CLEANUP_INTERVAL);
 }
