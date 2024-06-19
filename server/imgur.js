@@ -93,7 +93,7 @@ export async function fetchPostInfo(postId, imgurApplicationClientId) {
     );
 
     const commentData = response.data.data;
-
+    
     return commentData;
   } catch (error) {
     return [];

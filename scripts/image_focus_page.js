@@ -103,25 +103,20 @@ commentsButton.addEventListener("click", async (event) => {
     } 
   }
 
-  function addComment(commentInfo, parent) {
-    // Create the comment div element
+  function addComment(commentInfo, parent) { 
     const commentDiv = document.createElement("div");
     commentDiv.classList.add("comment");
 
-    // Create the user span element
     const userSpan = document.createElement("span");
     userSpan.classList.add("user");
     userSpan.textContent = commentInfo.author;
 
-    // Create the comment paragraph element
     const commentP = document.createElement("p");
     commentP.textContent = commentInfo.comment;
 
-    // Append user span and comment paragraph to the comment div
     commentDiv.appendChild(userSpan);
     commentDiv.appendChild(commentP);
 
-    // Append the comment div to the specified parent element
     parent.appendChild(commentDiv);
 
     console.log("commentInfo :>> ", commentInfo);

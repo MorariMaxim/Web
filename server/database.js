@@ -81,7 +81,7 @@ class DataBase {
       await this.run("drop table if exists tags");
       await this.run(dropImagesTable);
       await this.run("drop table if exists comments");
-      // await this.run(dropSessionsTable);
+      await this.run(dropSessionsTable);
       await this.run(dropUsersTable);
       await this.run("drop table resetPassCodes");
 
@@ -397,18 +397,10 @@ class DataBase {
   async insertImgurImage(imageId, postId, url) {
     const sql =
       "INSERT INTO imgurImages (postId, url, image_id) VALUES ($1, $2, $3)";
-    try {
-      const client = await this.pool.connect();
-      await client.query(sql, [postId, url, imageId]);
-      client.release();
-      return imageId;
-    } catch (err) {
-      console.error(
-        "Error inserting image into imgurImages table:",
-        err.message
-      );
-      return null;
-    }
+    const client = await this.pool.connect();
+    await client.query(sql, [postId, url, imageId]);
+    client.release();
+    return imageId;
   }
 
   async associateImageToUser(imageId, userId) {
@@ -425,56 +417,22 @@ class DataBase {
     }
   }
   //
-  async saveImgurImageToUser(sessionId, postId, url) {
+  async saveImgurImageToUser(userId, postId, url) {
     let client;
     try {
       client = await this.pool.connect();
       await client.query("BEGIN");
 
-      let response = {
-        success: false,
-        id: -1,
-        download: true,
-      };
+      let imageId = await this.insertImage("imgur", extname(url));
 
-      let imageId = await this.getImgurImageByUrl(url);
+      await this.insertImgurImage(imageId, postId, url);
 
-      console.log(imageId);
-
-      let userId = await this.getUserIdBySessionId(sessionId);
-
-      if (imageId === null) {
-        imageId = await this.insertImage("imgur", extname(url));
-        console.log(`saving image with ext = ${extname(url)}`);
-        if (!imageId) {
-          await client.query("ROLLBACK");
-          return response;
-        }
-
-        let result = await this.insertImgurImage(imageId, postId, url);
-        if (!result) {
-          await client.query("ROLLBACK");
-          return response;
-        }
-      } else {
-        response.download = false;
-      }
-
-      let result = await this.associateImageToUser(imageId, userId);
-
-      console.log("associating:" + result);
-
-      if (!result) {
-        await client.query("ROLLBACK");
-        return response;
-      }
+      await this.associateImageToUser(imageId, userId);
 
       await client.query("COMMIT");
-      response.id = imageId;
-      response.success = true;
-      return response;
+      return imageId;
     } catch (err) {
-      console.error("Error saving imgur image to user:", err.message);
+      await client.query("ROLLBACK");
       throw err;
     } finally {
       client.release();
@@ -802,24 +760,7 @@ class DataBase {
 
     return storedComments && storedMeta;
   }
-
-  async getUserEdits(userId, imageType) {
-    const sql = `
-        SELECT images.*
-        FROM images
-        JOIN userImages ON images.id = userImages.image_id
-        WHERE userImages.user_id = $1 AND images.type = $2
-    `;
-    try {
-      const client = await this.pool.connect();
-      const result = await client.query(sql, [userId, imageType]);
-      client.release();
-      return result.rows;
-    } catch (err) {
-      console.error("Error retrieving user edits:", err.message);
-      return null;
-    }
-  }
+ 
 
   async getUserImgurAccessToken(userId) {
     const sql = "SELECT * FROM imgurAccessTokens WHERE user_id = $1";

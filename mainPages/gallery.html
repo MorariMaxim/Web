@@ -63,7 +63,7 @@
               </li>
             </ul>
             <!-- imgurLocal-PhachMenu -->
-            <ul id="imgurLocal-PhachtMenu" class="PhactMenu" phactType="Filter">
+            <ul id="localPhactMenu" class="PhactMenu" phactType="Filter">
               <li>
                 <input
                   class="checkbox-input SelectAll"
@@ -97,9 +97,9 @@
 
       <div id="filter-phact-menu">
         <select id="sectionSelect">
-          <option value="New Unsplash">New Unsplash</option>
+          <option value="Local">Local</option>
           <option value="New Imgur">New Imgur</option>
-          <option value="Local Imgur">Local Imgur</option>
+          <option value="New Unsplash">New Unsplash</option>
         </select>
         <!-- select all, focus, upload -->
         <div class="phact-menu" id="phact-menu-desktop">
@@ -135,8 +135,8 @@
               <label class="checkbox" for="Focus">Focus</label>
             </li>
           </ul>
-          <!-- imgurLocal-PhachMenu -->
-          <ul id="imgurLocal-PhachtMenu" class="PhactMenu" phactType="Filter">
+          <!-- localPhachMenu -->
+          <ul id="localPhactMenu" class="PhactMenu" phactType="Filter">
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -235,30 +235,37 @@
             </div>
           </div>
 
-          <!-- local imgur -->
+          <!-- local fbar-->
 
-          <div
-            id="localImgurFBar"
-            class="filterBarVariant"
-            fbarType="Local Imgur"
-          >
+          <div id="localFbar" class="filterBarVariant" fbarType="Local">
             <div class="stylingBlock">
               <div class="form-group">
-                <label for="localImgurKeywords">Keywords</label>
+                <label for="localFbarOrigin">Origin</label>
+                <select id="localFbarOrigin" name="localFbarOrigin">
+                  <option value="none">none</option>
+                  <option value="unsplash">Unsplash</option>
+                  <option value="imgur">Imgur</option>
+                  <option value="edit">Edit</option>
+                  <option value="uploaded">Uploaded</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="localFbarKeywords">Keywords</label>
                 <input
                   type="text"
-                  id="localImgurKeywords"
-                  name="localImgurKeywords"
+                  id="localFbarKeywords"
+                  name="localFbarKeywords"
                   placeholder="cats, funny "
                   value=""
                 />
               </div>
               <div class="form-group">
-                <label for="localImgurTitle">Title</label>
+                <label for="localFbarTitle">Title</label>
                 <input
                   type="text"
-                  id="localImgurTitle"
-                  name="localImgurTitle"
+                  id="localFbarTitle"
+                  name="localFbarTitle"
                   placeholder="cats, funny "
                   value="napoleon"
                 />
@@ -358,7 +365,7 @@
             Fetch
           </button>
 
-          <div class="filterBarVariant" fbarType="Local Imgur">
+          <div class="filterBarVariant" fbarType="Local">
             <div class="stylingBlock">
               <h1>or</h1>
               <button id="fetchEdits" class="nice-button">Get Edits</button>

@@ -133,7 +133,7 @@ function showSelectedSection(select) {
 
 function actionFromSelectedValue(value) {
   if (value == "New Imgur" || value == "New Unsplash") return "Fetch";
-  else if (value == "Local Imgur") return "Filter";
+  else if (value == "Local") return "Filter";
   return "Fetch";
 }
 let sectionSelect = document.getElementById("sectionSelect");
@@ -164,8 +164,8 @@ filterButton.addEventListener("click", async () => {
   const value = sectionSelect.value;
 
   if (value == "New Imgur") downloadFromImgurRequest();
-  else if (value == "Local Imgur") searchLocalImgurRequest();
   else if (value == "New Unsplash") downloadFromUnsplashRequest();
+  else if (value == "Local") searchLocalImagesRequest();
 });
 
 fetchNewImgurUserButton.addEventListener("click", async () => {
@@ -227,18 +227,21 @@ async function downloadFromImgurRequest() {
   }
 }
 
-async function searchLocalImgurRequest() {
+async function searchLocalImagesRequest() {
   let headers = {
     "Content-Type": "application/json",
     sessionId: localStorage.getItem("sessionId"),
   };
-  let titleFilter = localImgurTitle.value.trim();
+  let titleFilter = localFbarTitle.value.trim();
 
-  let kwordsFilter = localImgurKeywords.value.trim();
+  let kwordsFilter = localFbarKeywords.value.trim();
+
+  let origin = localFbarOrigin.value;
 
   let queryParams = new URLSearchParams({
     title: titleFilter,
-    type: "imgurLocal",
+    origin,
+    type: "local",
     tags: kwordsFilter.split(/\s+/),
   });
 
@@ -251,10 +254,10 @@ async function searchLocalImgurRequest() {
 
     if (responseBody.length == 0) alert("no images found");
     else {
-      // console.log('responseBody :>> ', responseBody);
       fillGallery(mapIdsToUrls(responseBody));
     }
   } catch (e) {
+    console.log(e);
     alert("Seemingly there was a backend error, the server returned no images");
   }
 }
@@ -302,16 +305,13 @@ async function saveImagesRequest() {
     return;
   }
   let images;
+
   if (type == "New Imgur") {
     images = getImgurDataArray(htmlImages);
   } else if (type == "New Unsplash") {
     images = getUnsplashDataArray(htmlImages);
-  } else {
-    alert("something went wrong");
-    return;
   }
 
-  console.log("save request");
   let response = await fetch("/saveImages", {
     method: "POST",
     headers: {
@@ -322,8 +322,6 @@ async function saveImagesRequest() {
     body: JSON.stringify(images),
   });
 
-  console.log("save response");
-
   response = await response.json();
 
   let failed = [];
@@ -333,7 +331,6 @@ async function saveImagesRequest() {
 
     if (imgElement && response[image] != "fail") {
       imgElement.src = `http://${serverIp}:3000/getImage?id=${response[image]}`;
-      // imgElement.setAttribute("type", "Local Imgur");
     } else {
       failed.push(image);
     }
@@ -410,24 +407,24 @@ async function requestRemoteImgurUserImages() {
     headers,
   });
 
-  let ids = await response.json();
-
-  if (ids.cause) {
-    let agree = window.confirm(
-      "We need your permission to get images from your account."
-    );
-    console.log("agree :>> ", agree);
-    if (agree) {
-      window.open(
-        `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
-        "_blank"
+  if (response.ok) {
+    fillGallery(await response.json());
+  } else {
+    let text = await response.text();
+    console.log("here", `text = $${text}$`);
+    if (text == "no accessToken") {
+      let agree = window.confirm(
+        "We need your permission to get images from your account."
       );
-    }
+
+      if (agree) {
+        window.open(
+          `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
+          "_blank"
+        );
+      }
+    } else alert(`unknown server error: ${text}`);
   }
-
-  console.log("ids :>> ", ids);
-
-  fillGallery(ids);
 }
 
 async function downloadFromUnsplashRequest() {
