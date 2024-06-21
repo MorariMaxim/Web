@@ -21,6 +21,7 @@ import {
 } from "./server/unsplash/main.js";
 
 import { pointedExtension } from "./server/utilities.js";
+import { log } from "console";
 
 const applicationEmail = "mpic_application@outlook.com";
 const emailPassword = "mpic102442=Asf";
@@ -63,7 +64,7 @@ const serveFile = async (res, filePath) => {
 export const serveStaticFile = async (res, pathnameComponents) => {
   let filePath = join(__dirname, pathnameComponents[0], pathnameComponents[1]);
 
-  for (component in pathnameComponents) {
+  for (let component of pathnameComponents) {
     filePath = join(filePath, component);
   }
 
@@ -87,39 +88,74 @@ const server = createServer(async (req, res) => {
     if (pathComponents.length == 0) {
       const filePath = join(__dirname, "mainPages", "main_page.html");
       serveFile(res, filePath);
-    } else if (pathComponents[0] == "imgurAccessToken") {
-      serveFile(res, "imgurAccessToken.html");
-    } else if (pathComponents[0] == "storeImgurAccessToken") {
-      storeImgurAccessToken(req, res);
-    } else if (pathComponents[0] == "uploadDataArrayImage") {
-      uploadDataArrayImage(req, res);
-    } else if (pathComponents[0] == "uploadImage") {
-      uploadImage(req, res);
-    } else if (pathComponents[0] == "changeImageMeta") {
-      changeImageMeta(req, res);
-    } else if (pathComponents[0] == "getMeta") {
-      getMeta(req, res);
-    } else if (pathComponents[0] == "getImage") {
-      getImage(req, res);
-    } else if (pathComponents[0] == "searchImages") {
-      searchImagesRoute(req, res);
-    } else if (pathComponents[0] == "saveImages") {
-      saveImages(req, res);
-    } else if (pathComponents[0] == "loginRoute") {
-      loginRoute(req, res);
-    } else if (pathComponents[0] == "resetPassword") {
-      resetPassword(req, res);
-    } else if (pathComponents.length == 1) {
-      const filePath = join(__dirname, "mainPages", pathComponents[0]);
-      serveFile(res, filePath);
-    } else if (
-      pathComponents.length > 1 &&
-      staticFolders.includes(pathComponents.at(0))
-    ) {
-      serveFile(res, join(__dirname, pathname));
     } else {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("Page not found");
+      switch (pathComponents[0]) {
+        case "imgurAccessToken":
+          serveFile(res, "imgurAccessToken.html");
+          break;
+        case "storeImgurAccessToken":
+          storeImgurAccessToken(req, res);
+          break;
+        case "uploadDataArrayImage":
+          uploadDataArrayImage(req, res);
+          break;
+        case "uploadImage":
+          uploadImage(req, res);
+          break;
+        case "changeImageMeta":
+          changeImageMeta(req, res);
+          break;
+        case "getMeta":
+          getMeta(req, res);
+          break;
+        case "getImage":
+          getImage(req, res);
+          break;
+        case "searchImages":
+          searchImagesRoute(req, res);
+          break;
+        case "saveImages":
+          saveImages(req, res);
+          break;
+        case "loginRoute":
+          loginRoute(req, res);
+          break;
+        case "resetPassword":
+          resetPassword(req, res);
+          break;
+        case "api":
+          if (pathComponents[1] === "images") {
+            if (pathComponents.length === 2) {
+              let images = await searchLocalImagesRoute(req, res);
+              sendJsonResponse(res, images);
+            } else if (pathComponents.length === 3) {
+              let image = await getImageObjectRoute(
+                req,
+                res,
+                pathComponents[2]
+              );
+            } else {
+              sendNotFoundResponse(res);
+            }
+          } else if (pathComponents[1] === "getImage") {
+            await getImage(req, res);
+          } else sendNotFoundResponse(res);
+          break;
+        default:
+          if (pathComponents.length == 1) {
+            const filePath = join(__dirname, "mainPages", pathComponents[0]);
+            serveFile(res, filePath);
+          } else if (
+            pathComponents.length > 1 &&
+            staticFolders.includes(pathComponents.at(0))
+          ) {
+            serveFile(res, join(__dirname, pathname));
+          } else {
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            res.end("Page not found");
+          }
+          break;
+      }
     }
   } catch {
     res.writeHead(500, { "Content-Type": "text/plain" });
@@ -136,6 +172,20 @@ startDBCleanUpThread();
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
 });
+
+function sendJsonResponse(res, object) {
+  if (!object) {
+    sendNotFoundResponse(res);
+  } else {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(object));
+  }
+}
+
+function sendNotFoundResponse(res, message = "Not Found") {
+  res.writeHead(404, { "Content-Type": "text/plain" });
+  res.end(message);
+}
 
 function getBodyFromRequest(req) {
   return new Promise((resolve, reject) => {
@@ -381,14 +431,14 @@ async function downloadImgurImage(imageUrl, imagePath) {
   });
 }
 
-async function checkSessionId(req, res) {
+async function checkSessionId(req, res, end = true) {
   let userId = await dataBase.getUserIdBySessionId(req.headers.sessionid);
 
-  if (userId == null) {
+  if (userId == null && end) {
     res.writeHead(403, { "Content-Type": "text/plain" });
     res.end("Invalid sessionId");
     return null;
-  } else {
+  } else if (userId != null) {
     dataBase.refreshLastLoginTime(req.headers.sessionid);
   }
   return userId;
@@ -411,7 +461,53 @@ async function checkSessionId(req, res) {
   console.log(await dataBase.executeFunction("select * from sessions"));
 
   // await deleteImages([100, 1002]);
+
+  const images = await fetchImages("maxim", "dunes", ["desert"]);
+  images.forEach((image) => {
+    triggerGetImageObjectRoute(image, true);
+  });
+
+  // await triggerGetImageObjectRoute(40);
+  // await triggerGetImageObjectRoute(53);
+  // await triggerGetImageObjectRoute(54);
+  // await triggerGetImageObjectRoute(59);
 })();
+
+async function fetchImages(username, title, tags) {
+  try {
+    const queryParams = new URLSearchParams();
+    if (username != null) queryParams.append("username", username);
+    if (title != null) queryParams.append("title", title);
+    if (tags != null) queryParams.append("tags", tags);
+
+    const queryString = queryParams.toString();
+
+    const response = await axios.get(
+      `http://localhost:3000/api/images?${queryString}`
+    );
+    console.log("Images:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching images:", error.message);
+    return [];
+  }
+}
+
+async function triggerGetImageObjectRoute(imageId, simpleDisplay = false) {
+  try {
+    const response = await axios.get(
+      `http://localhost:3000/api/images/${imageId}`
+    );
+    if (simpleDisplay) {
+      console.log(response.data);
+    } else {
+      console.log("Status:", response.status, response.headers);
+      console.log("Response:", response.data);
+    }
+  } catch (error) {
+    console.error("Error fetching image object:", error.message);
+  }
+}
 
 async function deleteImages(imageIds) {
   const placeholders = imageIds.map((_, index) => `$${index + 1}`).join(", ");
@@ -424,13 +520,44 @@ async function deleteImages(imageIds) {
   }
 }
 
+async function getImageObjectRoute(req, res, imageId) {
+  let image = await getImageObject(parseInt(imageId, 10));
+  sendJsonResponse(res, image);
+}
+
+async function getImageObject(imageId) {
+  let image = await dataBase.getBaseImageByid(imageId);
+  if (!image) return null;
+
+  let meta = {};
+  switch (image.type) {
+    case "imgur":
+      meta = await dataBase.getImgurMetaAndCommentsData(imageId);
+      meta && (meta = { comments: meta.comments, ...meta.details });
+      break;
+    case "unsplash":
+      meta = await dataBase.getUnsplashMeta(imageId);
+      break;
+
+    default:
+      let tags = await dataBase.getAllTagsByImageId(imageId);
+      meta = { tags: tags };
+
+      let title = await dataBase.getTitleByImageId(imageId);
+      meta = { ...meta, title: title };
+      break;
+  }
+
+  return { ...image, ...meta };
+}
+
 async function getImage(req, res) {
   console.log("getImage");
   const parsedUrl = parse(req.url, true).query;
 
   let id = parsedUrl.id;
 
-  let image = await dataBase.getImageById(id);
+  let image = await dataBase.getBaseImageByid(id);
 
   if (!image) {
     res.writeHead(404, { "Content-Type": "text/plain" });
@@ -447,8 +574,7 @@ async function getImage(req, res) {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("Image not found");
+      sendNotFoundResponse(res);
     } else {
       res.writeHead(200, { "Content-Type": "image/jpeg" });
       res.end(data);
@@ -465,7 +591,7 @@ async function getMeta(req, res) {
   let response = {};
 
   if (imageId) {
-    let image = await dataBase.getImageById(imageId);
+    let image = await dataBase.getBaseImageByid(imageId);
     let imageType = image.type;
 
     if (imageType == "imgur") {
@@ -683,7 +809,7 @@ async function uploadImage(req, res) {
   let responseCode = 200;
   let responseBody = {};
 
-  let image = await dataBase.getImageById(imageId);
+  let image = await dataBase.getBaseImageByid(imageId);
 
   if (!image) {
     responseBody.cause = "no such image on the server";
@@ -1027,21 +1153,28 @@ async function searchLocalImagesRoute(req, res) {
   const parsedUrl = parse(req.url, true);
   const queryParams = parsedUrl.query;
 
-  let userId = await checkSessionId(req, res);
-  if (!userId) return;
+  let userId = await checkSessionId(req, res, false);
+  if (!userId) {
+    let userName = queryParams.username;
+    userId = await dataBase.getUserIdByUsername(userName);
+  }
 
-  let tags = queryParams.tags.split(",").filter((item) => item.length > 0);
+  let tags =
+    queryParams.tags?.split(",").filter((item) => item.length > 0) || [];
 
   if (tags.length == 0) tags = null;
 
-  let title = queryParams.title;
+  let title = queryParams.title || null;
 
-  let origin = queryParams.origin;
+  let origin = queryParams.origin || null;
   if (origin == "none") origin = null;
 
-  let ids = (await dataBase.getUserImages(userId)).map(
-    (image) => image.image_id
-  );
+  let ids;
+  if (userId) {
+    ids = (await dataBase.getUserImages(userId)).map((image) => image.image_id);
+  } else {
+    ids = (await dataBase.getImages()).map((image) => image.id);
+  }
 
   return await dataBase.filterIds(ids, tags, origin, title);
 }

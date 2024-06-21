@@ -639,7 +639,7 @@ class DataBase {
     }
   }
 
-  async getImageById(imageId) {
+  async getBaseImageByid(imageId) {
     const sql = "SELECT * FROM images WHERE id = $1";
     try {
       const client = await this.pool.connect();
@@ -651,6 +651,33 @@ class DataBase {
       return null;
     }
   }
+
+  async getAllTagsByImageId(imageId) {
+    const sql = "SELECT name FROM tags WHERE image_id = $1";
+    try {
+      const client = await this.pool.connect();
+      const result = await client.query(sql, [imageId]);
+      client.release();
+      return result.rows.map(row => row.name);
+    } catch (err) {
+      console.error("Error retrieving tags from database:", err.message);
+      return null;
+    }
+  }
+
+  async getTitleByImageId(imageId) {
+    const sql = "SELECT text FROM titles WHERE image_id = $1";
+    try {
+      const client = await this.pool.connect();
+      const result = await client.query(sql, [imageId]);
+      client.release();
+      return result.rows.length > 0 ? result.rows[0].text : null;
+    } catch (err) {
+      console.error("Error retrieving title from database:", err.message);
+      return null;
+    }
+  }
+  
 
   async getUserImages(userId) {
     const sql = "SELECT image_id FROM userImages WHERE user_id = $1";

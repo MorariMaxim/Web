@@ -76,3 +76,31 @@ const criteria = {
   orderBy: "relevant",
   contentFilter: "high",
 };
+
+
+
+async function fetchUserImagesFromUnsplash(username) {
+  try {
+    const userPhotosResponse = await unsplash.users.getPhotos({ username });
+    if (userPhotosResponse.errors) {
+      console.log("Error fetching user photos from Unsplash:", userPhotosResponse.errors);
+      return [];
+    }
+
+    const photos = userPhotosResponse.response.results;
+    return photos.map(photo => ({
+      id: photo.id,
+      url: photo.urls.full,
+      description: photo.description || photo.alt_description || "No description",
+      likes: photo.likes,
+      views: photo.views,
+      downloads: photo.downloads
+    }));
+  } catch (error) {
+    console.error("Error in fetchUserImagesFromUnsplash:", error);
+    return [];
+  }
+}
+
+
+
