@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../styles/nice-checkbox.css" />
     <link rel="stylesheet" href="../styles/nice-popup-menu.css" />
 
-    <!-- <link rel="manifest" href="/manifest.json" /> -->
+    <!-- <link rel="manifest" href="/manifest.json"> -->
   </head>
   <body>
     <main>
@@ -31,7 +31,11 @@
           </div>
           <div class="phact-menu" id="phact-menu">
             <!-- imgurNew-PhachMenu but  -->
-            <ul id="mobileNewImgurPhactMenu" class="PhactMenu" phactType="Fetch">
+            <ul
+              id="mobileNewImgurPhactMenu"
+              class="PhactMenu"
+              data-phact-type="Fetch"
+            >
               <li>
                 <input
                   class="checkbox-input SelectAll"
@@ -49,21 +53,33 @@
               </li>
               <li>
                 <input
-                  class="checkbox-input save_phact"
-                  id="save1"
+                  class="checkbox-input CleanGallery"
+                  id="CleanGallery3"
                   type="checkbox"
                 />
-                <label class="checkbox" for="save1" class="save_phact"
-                  >Save</label
+                <label class="checkbox" for="CleanGallery3"
+                  >Clean Gallery</label
                 >
               </li>
               <li>
-                <input class="checkbox-input" id="Focus" type="checkbox" />
-                <label class="checkbox" for="Focus">Focus</label>
+                <input class="checkbox-input" id="save1" type="checkbox" />
+                <label class="checkbox save_phact" for="save1">Save</label>
+              </li>
+              <li>
+                <input
+                  class="checkbox-input Focus"
+                  id="Focus1"
+                  type="checkbox"
+                />
+                <label class="checkbox" for="Focus1">Focus</label>
               </li>
             </ul>
             <!-- local -->
-            <ul id="mobileLocalPhactMenu" class="PhactMenu" phactType="Search">
+            <ul
+              id="mobileLocalPhactMenu"
+              class="PhactMenu"
+              data-phact-type="Search"
+            >
               <li>
                 <input
                   class="checkbox-input SelectAll"
@@ -82,20 +98,35 @@
               </li>
               <li>
                 <input
-                  class="checkbox-input"
-                  id="DeleteImages"
+                  class="checkbox-input CleanGallery"
+                  id="CleanGallery2"
                   type="checkbox"
                 />
-                <label class="checkbox CleanGallery" for="CleanGallery">Clean Gallery</label>
-              </li>
-              <li>
-                <input class="checkbox-input" id="Focus" type="checkbox" />
-                <label class="checkbox" for="Focus">Focus</label>
+                <label class="checkbox" for="CleanGallery2"
+                  >Clean Gallery</label
+                >
               </li>
 
               <li>
-                <input class="checkbox-input" id="Edit" type="checkbox" />
-                <label class="checkbox" for="Edit">Edit</label>
+                <input
+                  class="checkbox-input Delete"
+                  id="Delete2"
+                  type="checkbox"
+                />
+                <label class="checkbox" for="Delete2">Delete</label>
+              </li>
+              <li>
+                <input
+                  class="checkbox-input Focus"
+                  id="Focus2"
+                  type="checkbox"
+                />
+                <label class="checkbox" for="Focus2">Focus</label>
+              </li>
+
+              <li>
+                <input class="checkbox-input Edit" id="Edit2" type="checkbox" />
+                <label class="checkbox" for="Edit2">Edit</label>
               </li>
             </ul>
           </div>
@@ -111,7 +142,11 @@
         <!-- select all, focus, upload -->
         <div class="phact-menu" id="phact-menu-desktop">
           <!-- imgurNew-PhachMenu -->
-          <ul id="imgurNew-PhachtMenu" class="PhactMenu" phactType="Fetch">
+          <ul
+            id="imgurNew-PhachtMenu"
+            class="PhactMenu"
+            data-phact-type="Fetch"
+          >
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -129,21 +164,25 @@
             </li>
             <li>
               <input
-                class="checkbox-input save_phact"
-                id="save1"
+                class="checkbox-input CleanGallery"
+                id="CleanGallery4"
                 type="checkbox"
               />
-              <label class="checkbox" for="save1" class="save_phact"
-                >Save</label
+              <label class="checkbox" for="CleanGallery4"
+                >Clean Gallery</label
               >
             </li>
             <li>
-              <input class="checkbox-input" id="Focus" type="checkbox" />
-              <label class="checkbox" for="Focus">Focus</label>
+              <input class="checkbox-input" id="save2" type="checkbox" />
+              <label class="checkbox save_phact" for="save2">Save</label>
+            </li>
+            <li>
+              <input class="checkbox-input Focus" id="Focus3" type="checkbox" />
+              <label class="checkbox" for="Focus3">Focus</label>
             </li>
           </ul>
           <!-- localPhachMenu -->
-          <ul id="localPhactMenu" class="PhactMenu" phactType="Search">
+          <ul id="localPhactMenu" class="PhactMenu" data-phact-type="Search">
             <li>
               <input
                 class="checkbox-input SelectAll"
@@ -159,26 +198,41 @@
                 <span>Select All</span>
               </label>
             </li>
-
             <li>
-              <input class="checkbox-input" id="DeleteImages" type="checkbox" />
-              <label class="checkbox CleanGallery" for="CleanGallery">Clean Gallery</label>
+              <input
+                class="checkbox-input CleanGallery"
+                id="CleanGallery1"
+                type="checkbox"
+              />
+              <label class="checkbox" for="CleanGallery1">Clean Gallery</label>
+            </li>
+            <li>
+              <input
+                class="checkbox-input Delete"
+                id="Delete1"
+                type="checkbox"
+              />
+              <label class="checkbox" for="Delete1">Delete</label>
             </li>
 
             <li>
-              <input class="checkbox-input" id="Focus" type="checkbox" />
-              <label class="checkbox" for="Focus">Focus</label>
+              <input class="checkbox-input Focus" id="Focus4" type="checkbox" />
+              <label class="checkbox" for="Focus4">Focus</label>
             </li>
 
             <li>
-              <input class="checkbox-input" id="Edit" type="checkbox" />
-              <label class="checkbox" for="Edit">Edit</label>
+              <input class="checkbox-input Edit" id="Edit3" type="checkbox" />
+              <label class="checkbox" for="Edit3">Edit</label>
             </li>
           </ul>
         </div>
         <div class="filter-bar">
           <!-- new imgur -->
-          <div id="newImgurFBar" class="filterBarVariant" fbarType="New Imgur">
+          <div
+            id="newImgurFBar"
+            class="filterBarVariant"
+            data-fbar-type="New Imgur"
+          >
             <div class="stylingBlock">
               <div class="form-group">
                 <label for="imgurKeywords">Keywords</label>
@@ -249,7 +303,7 @@
 
           <!-- local fbar-->
 
-          <div id="localFbar" class="filterBarVariant" fbarType="Local">
+          <div id="localFbar" class="filterBarVariant" data-fbar-type="Local">
             <div class="stylingBlock">
               <div class="form-group">
                 <label for="localFbarOrigin">Origin</label>
@@ -279,7 +333,7 @@
                   id="localFbarTitle"
                   name="localFbarTitle"
                   placeholder="cats, funny "
-                  value="napoleon"
+                  
                 />
               </div>
             </div>
@@ -289,7 +343,7 @@
           <div
             id="newUnsplashFBar"
             class="filterBarVariant"
-            fbarType="New Unsplash"
+            data-fbar-type="New Unsplash"
           >
             <div class="stylingBlock">
               <div class="form-group">
@@ -360,24 +414,25 @@
                 />
               </div>
               <div class="form-group">
-                <label for="unsplashPerPage">per page</label>
+                <label for="unsplashPerPage">Per page</label>
                 <input
-                  type="number"
+                  type="range"
                   id="unsplashPerPage"
                   name="unsplashPerPage"
                   value="10"
                   min="1"
                   max="30"
+                  oninput="this.nextElementSibling.value = this.value"
                 />
+                <output>10</output>
               </div>
+              
             </div>
           </div>
 
-          <button id="filterButton" class="nice-button" role="button">
-            Fetch
-          </button>
+          <button id="filterButton" class="nice-button">Fetch</button>
 
-          <div class="filterBarVariant" fbarType="New Imgur">
+          <div class="filterBarVariant" data-fbar-type="New Imgur">
             <div class="stylingBlock">
               <h1>or</h1>
               <button id="fetchNewImgurUserButton" class="nice-button">

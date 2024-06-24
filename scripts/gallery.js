@@ -39,16 +39,26 @@ window.addEventListener("resize", function () {
 });
 
 function deleteGalleryImages() {
+  console.log("hre");
   let gallery = document.getElementById("gallery");
   while (gallery.firstChild) {
     gallery.removeChild(gallery.firstChild);
   }
 }
 
+function deleteGalleryImagesByIds(ids) { 
+  let gallery = document.getElementById("gallery");
+  let images = gallery.querySelectorAll("img");
+  images.forEach((image) => { 
+    let match = image.src.match(/getImage\?id=(\d+)/); 
+    if (match && ids.includes(parseInt(match[1]))) {
+      gallery.removeChild(image.parentNode);
+    }
+  });
+}
+
 export function makeImagesSelectable() {
   let images = document.querySelectorAll(".gallery-item img");
-
-  console.log("images :>> ", images);
 
   images.forEach((image) => {
     image.addEventListener("click", function () {
@@ -90,11 +100,15 @@ export const focusImage = () => {
   }
 };
 
-let focusButton = document.getElementById("Focus");
+let focusButton = document.querySelectorAll(".Focus");
+focusButton.forEach((button) => {
+  button.addEventListener("click", focusImage);
+});
 
-let editButton = document.getElementById("Edit");
-
-editButton.addEventListener("click", editImages);
+let editButtons = document.querySelectorAll(".Edit");
+editButtons.forEach((button) => {
+  button.addEventListener("click", editImages);
+});
 
 function editImages() {
   let images = [...getSelectedImages()];
@@ -108,8 +122,6 @@ function editImages() {
   }
 }
 
-focusButton.addEventListener("click", focusImage);
-
 function showSelectedSection(select) {
   const value = select.value;
   let action;
@@ -120,14 +132,14 @@ function showSelectedSection(select) {
 
   phactMenus.forEach((menu) => {
     menu.style.display =
-      menu.getAttribute("phactType") == action ? "block" : "none";
+      menu.getAttribute("data-phact-type") == action ? "block" : "none";
   });
 
   let filterBars = document.querySelectorAll(".filterBarVariant");
 
   filterBars.forEach((menu) => {
     menu.style.display =
-      menu.getAttribute("fbarType") == value ? "block" : "none";
+      menu.getAttribute("data-fbar-type") == value ? "block" : "none";
   });
 }
 
@@ -218,6 +230,8 @@ async function downloadFromImgurRequest() {
     const responseBody = await response.json();
     if (responseBody.length == 0) alert("no images found");
     else fillGallery(responseBody);
+
+    // imgurPageInput.value = parseInt(imgurPageInput.value) + 1
   } catch (e) {
     alert("Seemingly there was a backend error, the server returned no images");
   }
@@ -264,7 +278,6 @@ function keepSpacesAndLetters(text) {
 }
 
 function fillGallery(images) {
-
   let gallery = document.getElementById("gallery");
   images.forEach((image) => {
     const galleryItem = document.createElement("div");
@@ -291,6 +304,7 @@ saveButtons.forEach((button) => {
 });
 
 async function saveImagesRequest() {
+  console.log("calling saveImagesRequest");
   let type = sectionSelect.value;
 
   let htmlImages = getSelectedImages();
@@ -307,6 +321,7 @@ async function saveImagesRequest() {
     images = getUnsplashDataArray(htmlImages);
   }
 
+  console.log("making a request");
   let response = await fetch("/saveImages", {
     method: "POST",
     headers: {
@@ -318,20 +333,29 @@ async function saveImagesRequest() {
   });
 
   response = await response.json();
-
   let failed = [];
+  let ids = [];
 
   for (let image in response) {
     const imgElement = document.querySelector(`img[src="${image}"]`);
-
     if (imgElement && response[image] != "fail") {
       imgElement.src = `http://${serverIp}:3000/getImage?id=${response[image]}`;
+      ids.push(response[image]);
     } else {
       failed.push(image);
     }
   }
 
-  if (failed.length != 0) alert("Failed to load:\n" + failed.join("\n"));
+  let alertMessage = `Successfully saved ${
+    htmlImages.length - failed.length
+  } images.`;
+  if (failed.length > 0) {
+    alertMessage += `\nFailed to save ${failed.length} images:\n${failed.join(
+      "\n"
+    )}`;
+  }
+  alert(alertMessage);
+  deleteGalleryImagesByIds(ids);
 }
 
 function getImgurDataArray(htmlImages) {
@@ -357,7 +381,6 @@ function getSelectedImages() {
 }
 
 function mapIdsToUrls(ids) {
-  console.log("ids :>> ", ids);
   ids = ids.map((id) => {
     return {
       src: `http://${serverIp}:3000/getImage?id=${id}`,
@@ -383,7 +406,9 @@ async function requestRemoteImgurUserImages() {
   });
 
   if (response.ok) {
-    fillGallery(await response.json());
+    let result = await response.json();
+    if(result.length == 0) alert("no images found");
+    fillGallery(result);
   } else {
     let text = await response.text();
     console.log("here", `text = $${text}$`);
@@ -427,6 +452,8 @@ async function downloadFromUnsplashRequest() {
 
   criteria.page = unsplashPage.value;
 
+  criteria.perPage = unsplashPerPage.value;
+
   criteria.query = keepSpacesAndLetters(UnsplashKeywords.value).trim();
 
   console.log("criteria.query :>> ", criteria.query);
@@ -442,16 +469,60 @@ async function downloadFromUnsplashRequest() {
     console.log("responseBody :>> ", responseBody);
     if (responseBody.length == 0) alert("no images found");
     else fillGallery(responseBody);
+
+    // unsplashPage.value = parseInt(unsplashPage.value) + 1;
   } catch (e) {
     alert("Seemingly there was a backend error, the server returned no images");
   }
 }
 
 let cleanButtons = document.querySelectorAll(".CleanGallery");
-console.log("cleanButtons :>> ", cleanButtons);
+console.log("cleanbuttons");
+console.log(cleanButtons);
 
 cleanButtons.forEach((button) =>
   button.addEventListener("click", () => {
     deleteGalleryImages();
   })
 );
+
+let deleteButtons = document.querySelectorAll(".Delete");
+deleteButtons.forEach((button) =>
+  button.addEventListener("click", () => {
+    deleteImagesRequest();
+  })
+);
+
+async function deleteImagesRequest() {
+  let htmlImages = getSelectedImages();
+
+  if (htmlImages.length == 0) {
+    alert("No images selected");
+    return;
+  }
+
+  let imageIds = [...htmlImages]
+    .filter((image) => image.src.includes("getImage?id="))
+    .map((image) => image.src.match(/getImage\?id=(\d+)/)[1]);
+
+  console.log("imageIds :>> ", imageIds);
+
+  let response = await fetch("/deleteImages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      sessionId: localStorage.getItem("sessionId"),
+    },
+    body: JSON.stringify({ ids: imageIds }),
+  });
+
+  let message = (await response.json()).message;
+
+  if (response.ok) {
+    alert(message);
+    deleteGalleryImagesByIds(imageIds);
+  } else {
+    alert(message);
+  }
+}
+ 

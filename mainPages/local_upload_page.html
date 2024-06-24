@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Local Upload Page</title> 
-    <link rel="stylesheet" href="../styles/local_upload_page.css">
+    <title>Local Upload Page</title>
+    <link rel="stylesheet" href="../styles/local_upload_page.css" />
   </head>
   <body>
     <main>
@@ -15,16 +15,26 @@
       </div>
 
       <input type="file" id="fileInput" multiple accept="image/*" />
-      <label for="fileInput" class="file-upload-container" id="fileDropArea">
+      <div class="file-upload-container" id="fileDropArea">
         <div class="upload-content" id="upload-content"></div>
-      </label>
+      </div>
 
       <div class="upload-button-section">
         <button class="nice-button" id="uploadButton">Upload</button>
       </div>
     </main>
-  </body>
 
-  <script type="module" src="../scripts/prepend_header.js"></script> 
-  <script src="../scripts/local_upload_page.js"></script>
+    <script type="module" src="../scripts/prepend_header.js"></script>
+    <script src="../scripts/local_upload_page.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var fileDropArea = document.getElementById("fileDropArea");
+        var fileInput = document.getElementById("fileInput");
+
+        fileDropArea.addEventListener("click", function () {
+          fileInput.click(); // Simulate click on the file input when fileDropArea is clicked
+        });
+      });
+    </script>
+  </body>
 </html>

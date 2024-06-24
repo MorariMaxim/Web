@@ -52,7 +52,7 @@ IMG / CSS / JS / etc.
 
 Paginile trebuie sa fie valide HTML (vor fi validate cu https://validator.w3.org)
 
-CSSul trebuie sa fie valide cu http://csslint.net/
+CSSul trebuie sa fie valide cu https://jigsaw.w3.org/css-validator/
 
 Paginile trebuie sa fie responsive.... le voi verifica prin micsorarea ferestrei dar
 si prin selectarea telefon / PC (ma astept ca diversele elemente grafice sa nu 

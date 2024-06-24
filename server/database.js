@@ -147,8 +147,7 @@ class DataBase {
         postId TEXT NOT NULL,
         url TEXT NOT NULL,
         image_id INTEGER NOT NULL,
-        FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE,
-        UNIQUE(postId, url)
+        FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
       );
     `;
 
@@ -297,22 +296,7 @@ class DataBase {
       console.error("Error:", err.message);
       return null;
     }
-  }
-
-  async addUserv0(name, password) {
-    const sql = "INSERT INTO users (username, password) VALUES ($1, $2)";
-    try {
-      const client = await this.pool.connect();
-      await client.query(sql, [name, password]);
-      client.release();
-    } catch (err) {
-      if (err.code === "23505") {
-        console.log(`Username '${name}' is already taken.`);
-      } else {
-        console.error(err);
-      }
-    }
-  }
+  } 
   async addUser(name, password, email) {
     return this.executeFunction(
       "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
@@ -363,7 +347,7 @@ class DataBase {
     }
   }
   async refreshImgurAccessTokenLastAccessDate(token) {
-    const client = await pool.connect();
+    const client = await this.pool.connect();
     try {
       const updateQuery = `
         UPDATE imgurAccessTokens
@@ -380,7 +364,7 @@ class DataBase {
   }
 
   async refreshLastLoginTime(sessionId) {
-    const client = await pool.connect();
+    const client = await this.pool.connect();
     try {
       const updateQuery = `
         UPDATE sessions
@@ -949,7 +933,7 @@ function deleteFilesInDirectory(directory) {
         if (err) {
           console.error("Error deleting file:", err);
           return;
-        }
+        } 
         console.log(`Deleted file: ${filePath}`);
       });
     });

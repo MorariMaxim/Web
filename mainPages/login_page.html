@@ -11,80 +11,86 @@
   <body>
     <div class="login-container">
       <!-- login form -->
-      <form class="login-form" action="#" actionType="log-in">
+      <form class="login-form" action="#" data-action-type="log-in">
         <h1 class="form-header">Log In</h1>
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="username1">Username</label>
           <input
             type="text"
             class="username-input"
-            name="username"
+            id="username1"
             placeholder=" "
           />
         </div>
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password1">Password</label>
           <div class="password-container">
             <input
               type="password"
               class="password-input"
-              name="password"
+              id="password1"
               required
             />
             <div>
               <img
                 class="password-visibility-button"
                 src="../resources/hide-password.png"
+                alt="Toggle Password Visibility"
               />
             </div>
           </div>
         </div>
       </form>
 
-      <!-- singup form -->
-      <form class="singup-form hidden" action="#" actionType="sign-up">
+      <!-- signup form -->
+      <form class="signup-form hidden" action="#" data-action-type="sign-up">
         <h1 class="form-header">Sign Up</h1>
         <div class="form-group">
-          <label for="username">Username</label>
+          <label for="username2">Username</label>
           <input
             type="text"
             class="username-input"
-            name="username"
+            id="username2"
             placeholder=" "
           />
         </div>
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password2">Password</label>
           <div class="password-container">
             <input
               type="password"
               class="password-input"
-              name="password"
+              id="password2"
               required
             />
             <div>
               <img
                 class="password-visibility-button"
                 src="../resources/hide-password.png"
+                alt="Toggle Password Visibility"
               />
             </div>
           </div>
         </div>
-        <div class="form-group" id="emailFromGroup">
-          <label for="email">Email</label>
-          <input type="email" id="email-input" name="email" placeholder=" " />
+        <div class="form-group" id="emailFormGroup">
+          <label for="emailInput">Email</label>
+          <input type="email" id="emailInput" placeholder=" " />
         </div>
       </form>
 
       <!-- reset pass form -->
-      <form class="reset-form hidden" action="#" actionType="reset-password">
+      <form
+        class="reset-form hidden"
+        action="#"
+        data-action-type="reset-password"
+      >
         <h1 class="form-header">Reset Password</h1>
         <div class="form-group send-code-phase">
-          <label for="username">Username</label>
+          <label for="username3">Username</label>
           <input
             type="text"
             class="username-input"
-            name="username"
+            id="username3"
             placeholder=" "
           />
         </div>
@@ -94,18 +100,13 @@
           <input
             type="text"
             class="password-input"
-            name="newpassword"
+            id="newpassword"
             placeholder=" "
           />
         </div>
         <div class="form-group reset-code-phase hidden">
-          <label for="resetcode">Reset Code</label>
-          <input
-            type="text"
-            id="resetcode-input"
-            name="resetcode"
-            placeholder=" "
-          />
+          <label for="resetcode-input">Reset Code</label>
+          <input type="text" id="resetcode-input" placeholder=" " />
         </div>
       </form>
 
@@ -114,23 +115,27 @@
         <div
           id="resetPasswordButton"
           class="nowrap sectionSelect"
-          actionType="reset-password"
+          data-action-type="reset-password"
         >
           Reset Password
         </div>
         <div
           id="signup-button"
           class="nowrap sectionSelect"
-          actionType="sign-up"
+          data-action-type="sign-up"
         >
           Sign Up
         </div>
-        <div id="login-button" class="nowrap sectionSelect" actionType="log-in">
+        <div
+          id="login-button"
+          class="nowrap sectionSelect"
+          data-action-type="log-in"
+        >
           Log in
         </div>
       </div>
     </div>
+    <script type="module" src="../scripts/prepend_header.js"></script>
+    <script type="module" src="../scripts/login.js"></script>
   </body>
-  <script type="module" src="../scripts/prepend_header.js"></script>
-  <script type="module" src="../scripts/login.js"></script>
 </html>

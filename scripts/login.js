@@ -1,19 +1,21 @@
 import { sessionManager } from "./authentification.js";
 import { redirectTo } from "./common.js";
 
-let hidden = true;
 let submitAction = "log-in";
 let resetPassPhase = 1;
 
 document.querySelectorAll(".sectionSelect").forEach((button) => {
   button.addEventListener("click", () => {
     console.log(
-      'button.getAttribute("actionType") :>> ',
-      button.getAttribute("actionType")
+      'button.getAttribute("data-action-type") :>> ',
+      button.getAttribute("data-action-type")
     );
-    submitAction = button.getAttribute("actionType");
+    submitAction = button.getAttribute("data-action-type");
     document.querySelectorAll("form").forEach((form) => {
-      if (form.getAttribute("actionType") != button.getAttribute("actionType"))
+      if (
+        form.getAttribute("data-action-type") !=
+        button.getAttribute("data-action-type")
+      )
         form.classList.add("hidden");
       else form.classList.remove("hidden");
     });
@@ -22,23 +24,27 @@ document.querySelectorAll(".sectionSelect").forEach((button) => {
 
 document.querySelectorAll(".password-visibility-button").forEach((button) => {
   button.addEventListener("click", (event) => {
-    let passwordButtons = document.querySelectorAll(".password-input");
-    console.log(" passwordButtons :>> ", passwordButtons);
-    let src;
-    let type;
-    if (hidden) {
-      type = "password";
-      src = "../resources/show-password.png";
-    } else {
-      type = "text";
-      src = "../resources/hide-password.png";
-    }
-    passwordButtons.forEach((button) => {
-      button.setAttribute("type", type);
-    });
-    button.src = src;
+    const parentContainer = button.closest(".password-container");
 
-    hidden = !hidden;
+    const passwordInput = parentContainer.querySelector(".password-input");
+
+    if (passwordInput) {
+      console.log("passwordInput :>> ", passwordInput);
+
+      let src;
+      let type;
+      let hidden = passwordInput.getAttribute("type") == "text";
+      if (!hidden) {
+        type = "text";
+        src = "../resources/show-password.png";
+      } else {
+        type = "password";
+        src = "../resources/hide-password.png";
+      }
+
+      passwordInput.setAttribute("type", type);
+      button.src = src;
+    }
   });
 });
 
@@ -55,7 +61,7 @@ submitButton.addEventListener("click", async (event) => {
 
   if (resetPassPhase == 1 && !validateUserName(username)) return;
 
-  if (resetPassPhase == 2) {
+  if (resetPassPhase != 1) {
     if (!isValidPassword(password)) return;
   }
 
@@ -152,7 +158,7 @@ function getCredentials(type) {
   let password = null;
 
   let usernameInput = document.querySelector(
-    `form[actionType="${type}"] .username-input`
+    `form[data-action-type="${type}"] .username-input`
   );
 
   if (usernameInput) {
@@ -160,7 +166,7 @@ function getCredentials(type) {
   }
 
   let passwordInput = document.querySelector(
-    `form[actionType="${type}"] .password-input`
+    `form[data-action-type="${type}"] .password-input`
   );
   if (passwordInput) {
     password = passwordInput.value;
@@ -223,7 +229,7 @@ function isValidPassword(password) {
 }
 
 function getAndValidateEmail() {
-  let emailInput = document.getElementById("email-input");
+  let emailInput = document.getElementById("emailInput");
 
   let email = emailInput.value;
 

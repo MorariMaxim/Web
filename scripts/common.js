@@ -3,9 +3,7 @@ export const redirectTo = (targetUrl, data) => {
 
   for (const key in data) {
     queryParams.append(key, data[key]);
-  }
-
-  console.log(`targetUrl?${queryParams.toString()}`);
+  } 
 
   window.location.href = `${targetUrl}?${queryParams.toString()}`;
 };

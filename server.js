@@ -85,45 +85,42 @@ const server = createServer(async (req, res) => {
     let pathname = parsedUrl.pathname;
     const pathComponents = pathname.split("/").filter(Boolean);
 
-    if (pathComponents.length == 0) {
+    if (pathComponents.length == 0) {// file serve
       const filePath = join(__dirname, "mainPages", "main_page.html");
       serveFile(res, filePath);
     } else {
       switch (pathComponents[0]) {
-        case "imgurAccessToken":
-          serveFile(res, "imgurAccessToken.html");
-          break;
-        case "storeImgurAccessToken":
+        case "storeImgurAccessToken"://database
           storeImgurAccessToken(req, res);
-          break;
-        case "uploadDataArrayImage":
-          uploadDataArrayImage(req, res);
-          break;
-        case "uploadImage":
+          break; 
+        case "uploadImage"://imgur facade
           uploadImage(req, res);
           break;
-        case "changeImageMeta":
+        case "changeImageMeta": // general
           changeImageMeta(req, res);
           break;
-        case "getMeta":
+        case "getMeta": // general
           getMeta(req, res);
           break;
-        case "getImage":
+        case "getImage": // general
           getImage(req, res);
           break;
-        case "searchImages":
+        case "searchImages": // general
           searchImagesRoute(req, res);
           break;
-        case "saveImages":
+        case "saveImages": // general, similar to above
           saveImages(req, res);
           break;
-        case "loginRoute":
+        case "loginRoute": //auth comp
           loginRoute(req, res);
           break;
-        case "resetPassword":
+        case "resetPassword": // auth comp
           resetPassword(req, res);
           break;
-        case "api":
+        case "deleteImages": // general
+          await deleteImagesRoute(req, res);
+          break;
+        case "api": // general
           if (pathComponents[1] === "images") {
             if (pathComponents.length === 2) {
               let images = await searchLocalImagesRoute(req, res);
@@ -141,8 +138,8 @@ const server = createServer(async (req, res) => {
             await getImage(req, res);
           } else sendNotFoundResponse(res);
           break;
-        default:
-          if (pathComponents.length == 1) {
+        default:// file serve
+          if (pathComponents.length == 1) { 
             const filePath = join(__dirname, "mainPages", pathComponents[0]);
             serveFile(res, filePath);
           } else if (
@@ -185,6 +182,21 @@ function sendJsonResponse(res, object) {
 function sendNotFoundResponse(res, message = "Not Found") {
   res.writeHead(404, { "Content-Type": "text/plain" });
   res.end(message);
+}
+
+function sendUnauthorizedResponse(res) {
+  res.writeHead(401, { "Content-Type": "text/plain" });
+  res.end("Unauthorized");
+}
+
+function sendBadRequestResponse(res, message) {
+  res.writeHead(400, { "Content-Type": "text/plain" });
+  res.end(message);
+}
+
+function sendInternalServerErrorResponse(res) {
+  res.writeHead(500, { "Content-Type": "text/plain" });
+  res.end("Internal Server Error");
 }
 
 function getBodyFromRequest(req) {
@@ -435,8 +447,7 @@ async function checkSessionId(req, res, end = true) {
   let userId = await dataBase.getUserIdBySessionId(req.headers.sessionid);
 
   if (userId == null && end) {
-    res.writeHead(403, { "Content-Type": "text/plain" });
-    res.end("Invalid sessionId");
+    sendUnauthorizedResponse(res);
     return null;
   } else if (userId != null) {
     dataBase.refreshLastLoginTime(req.headers.sessionid);
@@ -462,15 +473,20 @@ async function checkSessionId(req, res, end = true) {
 
   // await deleteImages([100, 1002]);
 
-  const images = await fetchImages("maxim", "dunes", ["desert"]);
+  /*  const images = await fetchImages("maxim", "dunes", ["desert"]);
   images.forEach((image) => {
     triggerGetImageObjectRoute(image, true);
-  });
+  }); */
 
   // await triggerGetImageObjectRoute(40);
   // await triggerGetImageObjectRoute(53);
   // await triggerGetImageObjectRoute(54);
   // await triggerGetImageObjectRoute(59);
+
+  /* triggerDeleteImagesRoute(
+    [64, 65, 66, 67, 68, 69],
+    "477d3d54-3814-4936-b607-f52a84a96214"
+  ); */
 })();
 
 async function fetchImages(username, title, tags) {
@@ -492,7 +508,6 @@ async function fetchImages(username, title, tags) {
     return [];
   }
 }
-
 async function triggerGetImageObjectRoute(imageId, simpleDisplay = false) {
   try {
     const response = await axios.get(
@@ -509,12 +524,45 @@ async function triggerGetImageObjectRoute(imageId, simpleDisplay = false) {
   }
 }
 
+async function triggerDeleteImagesRoute(imageIds, sessionId) {
+  try {
+    const response = await axios.delete(`http://localhost:3000/deleteImages`, {
+      headers: {
+        sessionid: sessionId,
+      },
+      data: { ids: imageIds },
+    });
+    console.log("Delete response:", response.data);
+  } catch (error) {
+    console.error("Error deleting images:", error.message);
+  }
+}
+async function deleteImagesFromRepo(imageIds) {
+  for (const id of imageIds) {
+    const imageDirectory = join("server/repository/images");
+    const files = await fs.promises.readdir(imageDirectory);
+    const fileToDelete = files.find((file) => file.startsWith(`${id}.`));
+    if (fileToDelete) {
+      const filePath = join(imageDirectory, fileToDelete);
+      try {
+        await fs.promises.unlink(filePath);
+        console.log(`Deleted image file: ${filePath}`);
+      } catch (fsError) {
+        console.error(`Error deleting image file: ${filePath}`, fsError);
+      }
+    } else {
+      console.log(`No file found for ID: ${id}`);
+    }
+  }
+}
 async function deleteImages(imageIds) {
   const placeholders = imageIds.map((_, index) => `$${index + 1}`).join(", ");
   const sql = `DELETE FROM images WHERE id IN (${placeholders})`;
 
   try {
     console.log(await dataBase.executeFunction(sql, imageIds));
+
+    await deleteImagesFromRepo(imageIds);
   } catch (error) {
     console.error("Error deleting entries:", error);
   }
@@ -789,16 +837,15 @@ async function uploadImage(req, res) {
 
   console.log("token stored: " + accessToken);
 
-  accessToken = accessToken.token;
-
   if (!accessToken) {
     res.writeHead(500, { "Content-Type": "application/json" });
 
-    res.end(JSON.stringify("no accessToken"));
+    res.end(JSON.stringify({ cause: "no accessToken" }));
 
     return;
   }
 
+  accessToken = accessToken.token;
   const parsedUrl = parse(req.url, true);
   const queryParams = parsedUrl.query;
 
@@ -1118,11 +1165,7 @@ function generateRandomCode(length) {
 
   return code;
 }
-
-async function uploadDataArrayImage(req, res) {
-  let userId = await checkSessionId(req, res);
-  if (!userId) return;
-}
+ 
 
 async function saveNewUnsplashImages(req, res) {
   let userId = await checkSessionId(req, res);
@@ -1189,4 +1232,32 @@ function startDBCleanUpThread() {
       console.error("Error during scheduled cleanup:", err);
     });
   }, CLEANUP_INTERVAL);
+}
+
+async function deleteImagesRoute(req, res) {
+  let body = await getBodyFromRequest(req);
+  if (!body?.ids) {
+    sendBadRequestResponse(res, "No image IDs provided");
+    return;
+  }
+
+  try {
+    let userId = await checkSessionId(req, res);
+    if (!userId) {
+      return;
+    }
+
+    let userImageIds = (await dataBase.getUserImages(userId)).map(
+      (image) => image.image_id
+    );
+    let idsToDelete = body.ids
+      .map((id) => parseInt(id))
+      .filter((id) => userImageIds.includes(id));
+    await deleteImages(idsToDelete);
+
+    sendJsonResponse(res, { message: "Images deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting images:", error);
+    sendInternalServerErrorResponse(res);
+  }
 }

@@ -37,8 +37,7 @@ class SessionManager {
     }
   }
 
-  async sendSessionId(sessionId) {
-    console.log("sending sessionId");
+  async sendSessionId(sessionId) { 
     try {
       const response = await fetch("/loginRoute", {
         method: "POST",

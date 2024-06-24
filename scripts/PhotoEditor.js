@@ -218,3 +218,5 @@ class ImageMemento extends Memento {
 }
 
 export { PhotoEditor, Memento, FilterMemento, AnnotationMemento, ImageMemento };
+
+

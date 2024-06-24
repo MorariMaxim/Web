@@ -19,7 +19,6 @@ addHeader(logged);
 setUserName();
 
 function addHeader(logged) {
-  console.log(logged);
   let header = logged ? logged_header : unlogged_header;
 
   let stylesheet = logged

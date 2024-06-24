@@ -100,10 +100,10 @@ commentsButton.addEventListener("click", async (event) => {
         const fieldValue = highlighted[detail_][key];
         addDetail(fieldName, fieldValue);
       }
-    } 
+    }
   }
 
-  function addComment(commentInfo, parent) { 
+  function addComment(commentInfo, parent) {
     const commentDiv = document.createElement("div");
     commentDiv.classList.add("comment");
 
@@ -215,21 +215,23 @@ imgurUploadForm.addEventListener("submit", async (event) => {
       headers: { sessionid: localStorage.getItem("sessionId") },
     });
 
-    let cause = (await response.json()).cause;
-
-    if (cause == "accessToken") {
-      let agree = window.confirm(
-        "We need your permission to upload an image to your account."
-      );
-      console.log("agree :>> ", agree);
-      if (agree) {
-        window.open(
-          `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
-          "_blank"
-        );
-      }
-    } else {
+    if (response.ok) {
       alert("Image successfully uploaded to your account!");
+    } else {
+      let body = await response.json();
+      console.log('response :>> ', response);
+      if (body.cause == "no accessToken") {
+        let agree = window.confirm(
+          "We need your permission to upload an image to your account."
+        );
+        console.log("agree :>> ", agree);
+        if (agree) {
+          window.open(
+            `https://api.imgur.com/oauth2/authorize?client_id=${imgurApplicationClientId}&response_type=token&state=some_random_state`,
+            "_blank"
+          );
+        }
+      } else alert("unknown server error");
     }
   }
 });
