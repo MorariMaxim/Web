@@ -296,7 +296,7 @@ class DataBase {
       console.error("Error:", err.message);
       return null;
     }
-  } 
+  }
   async addUser(name, password, email) {
     return this.executeFunction(
       "INSERT INTO users (username, password, email) VALUES ($1, $2, $3)",
@@ -566,6 +566,27 @@ class DataBase {
     }
   }
 
+  async getMetaByImageId(imageId) {
+    const client = await this.pool.connect();
+
+    try {
+      const meta = {};
+
+      const title = await this.getTitleByImageId(imageId);
+      meta.title = title;
+
+      const tags = await this.getAllTagsByImageId(imageId);
+      meta.tags = tags;
+
+      return meta;
+    } catch (err) {
+      console.error("Error fetching metadata by image ID:", err.message);
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
   async getUnsplashMeta(localId) {
     const client = await this.pool.connect();
 
@@ -642,7 +663,7 @@ class DataBase {
       const client = await this.pool.connect();
       const result = await client.query(sql, [imageId]);
       client.release();
-      return result.rows.map(row => row.name);
+      return result.rows.map((row) => row.name);
     } catch (err) {
       console.error("Error retrieving tags from database:", err.message);
       return null;
@@ -661,7 +682,6 @@ class DataBase {
       return null;
     }
   }
-  
 
   async getUserImages(userId) {
     const sql = "SELECT image_id FROM userImages WHERE user_id = $1";
@@ -933,7 +953,7 @@ function deleteFilesInDirectory(directory) {
         if (err) {
           console.error("Error deleting file:", err);
           return;
-        } 
+        }
         console.log(`Deleted file: ${filePath}`);
       });
     });

@@ -42,3 +42,11 @@ export async function getImageExtension(imageUrl) {
 export function pointedExtension(ext) {
   return ext[0] == "." ? ext : `.${ext}`;
 }
+
+export function unpointedExtension(ext) {
+  const lastDotIndex = ext.lastIndexOf('.'); 
+  if (lastDotIndex !== -1) {
+      return ext.substring(lastDotIndex + 1);
+  } 
+  return ext;
+}

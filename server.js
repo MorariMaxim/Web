@@ -20,7 +20,7 @@ import {
   fetchUnsplashMeta,
 } from "./server/unsplash/main.js";
 
-import { pointedExtension } from "./server/utilities.js";
+import { pointedExtension, unpointedExtension } from "./server/utilities.js";
 import { log } from "console";
 
 const applicationEmail = "mpic_application@outlook.com";
@@ -85,15 +85,16 @@ const server = createServer(async (req, res) => {
     let pathname = parsedUrl.pathname;
     const pathComponents = pathname.split("/").filter(Boolean);
 
-    if (pathComponents.length == 0) {// file serve
+    if (pathComponents.length == 0) {
+      // file serve
       const filePath = join(__dirname, "mainPages", "main_page.html");
       serveFile(res, filePath);
     } else {
       switch (pathComponents[0]) {
-        case "storeImgurAccessToken"://database
+        case "storeImgurAccessToken": //database
           storeImgurAccessToken(req, res);
-          break; 
-        case "uploadImage"://imgur facade
+          break;
+        case "uploadImage": //imgur facade
           uploadImage(req, res);
           break;
         case "changeImageMeta": // general
@@ -138,8 +139,8 @@ const server = createServer(async (req, res) => {
             await getImage(req, res);
           } else sendNotFoundResponse(res);
           break;
-        default:// file serve
-          if (pathComponents.length == 1) { 
+        default: // file serve
+          if (pathComponents.length == 1) {
             const filePath = join(__dirname, "mainPages", pathComponents[0]);
             serveFile(res, filePath);
           } else if (
@@ -473,10 +474,10 @@ async function checkSessionId(req, res, end = true) {
 
   // await deleteImages([100, 1002]);
 
-  /*  const images = await fetchImages("maxim", "dunes", ["desert"]);
+  const images = await fetchImages("maxim", "dunes", ["desert, dunes"]);
   images.forEach((image) => {
     triggerGetImageObjectRoute(image, true);
-  }); */
+  });
 
   // await triggerGetImageObjectRoute(40);
   // await triggerGetImageObjectRoute(53);
@@ -492,12 +493,14 @@ async function checkSessionId(req, res, end = true) {
 async function fetchImages(username, title, tags) {
   try {
     const queryParams = new URLSearchParams();
+    if (tags != null) queryParams.append("tags", tags);
     if (username != null) queryParams.append("username", username);
     if (title != null) queryParams.append("title", title);
-    if (tags != null) queryParams.append("tags", tags);
+    
 
     const queryString = queryParams.toString();
 
+    console.log(`url: http://localhost:3000/api/images?${queryString}`);
     const response = await axios.get(
       `http://localhost:3000/api/images?${queryString}`
     );
@@ -624,7 +627,7 @@ async function getImage(req, res) {
     if (err) {
       sendNotFoundResponse(res);
     } else {
-      res.writeHead(200, { "Content-Type": "image/jpeg" });
+      res.writeHead(200, { "Content-Type": `image/${unpointedExtension(image.ext)}` });
       res.end(data);
     }
   });
@@ -662,6 +665,9 @@ async function getMeta(req, res) {
       if (!meta) await dataBase.saveUnsplashMeta(imageId, remoteId);
 
       response.details = await dataBase.getUnsplashMeta(imageId);
+    }
+    else {
+      response.details = await dataBase.getMetaByImageId(imageId);
     }
   } else if (type == "New Imgur") {
     response = await getImgurMetaDataFromPostId(remoteId);
@@ -1165,7 +1171,6 @@ function generateRandomCode(length) {
 
   return code;
 }
- 
 
 async function saveNewUnsplashImages(req, res) {
   let userId = await checkSessionId(req, res);
