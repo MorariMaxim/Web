@@ -11,7 +11,8 @@ An application that aggregates images.
 # Demo
 
 
-[![A 5-minute, 30-second video ](Screenshot 2025-02-16 171305.png)](https://youtu.be/MJLgdYdAt34)
+[![A 5-minute, 30-second video](resources/demo.png)](https://youtu.be/MJLgdYdAt34)
+
 
 ![Demo](demo.gif)
 
