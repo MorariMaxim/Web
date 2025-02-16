@@ -11,7 +11,10 @@ An application that aggregates images.
 # Demo
 
 
-[![A 5-minute, 30-second video](resources/demo.png)](https://youtu.be/MJLgdYdAt34)
+![A 5-minute, 30-second video](resources/demo.png)
+
+[Watch on YouTube](https://youtu.be/MJLgdYdAt34)
+
 
 
 ![Demo](demo.gif)
